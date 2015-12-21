@@ -1,12 +1,15 @@
 #pragma once
 
+
+#include "SevenZipLibrary.h"
+#include "CompressionFormat.h"
+
+
 namespace SevenZip
 {
 	class ListCallback
 	{
 	public:
-		virtual ~ListCallback() {}
-
 		/*
 		Called for each file found in the archive. Size in bytes.
 		*/

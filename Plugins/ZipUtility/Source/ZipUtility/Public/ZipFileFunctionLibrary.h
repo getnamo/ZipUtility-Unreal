@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SevenZipInterface.h"
+#include "ZipUtilityInterface.h"
 #include "ZipFileFunctionLibrary.generated.h"
 
 UENUM(BlueprintType)
@@ -29,18 +29,29 @@ public:
 	GENERATED_UCLASS_BODY()
 	~UZipFileFunctionLibrary();
 
-	UFUNCTION(BlueprintCallable, Category = Zipper)
-	static bool Unzip(const FString& path, TScriptInterface<ISevenZipInterface> progressDelegate);
+	/* Unzips archive at path, automatically determines compression. Calls ZipUtilityInterface progress events. */
+	UFUNCTION(BlueprintCallable, Category = ZipUtility)
+	static bool Unzip(const FString& path, UObject* ZipUtilityInterfaceDelegate); //TScriptInterface<ISevenZipInterface>, has issues with conversion to UObject*
 
-	UFUNCTION(BlueprintCallable, Category = Zipper)
-	static bool UnzipWithFormat(const FString& path, UObject* progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_UNKNOWN);
+	/* Unzips archive at path with the specified compression format. Calls ZipUtilityInterface progress events.*/
+	UFUNCTION(BlueprintCallable, Category = ZipUtility)
+	static bool UnzipWithFormat(const FString& path, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_UNKNOWN);
 
-	UFUNCTION(BlueprintCallable, Category = Zipper)
-	static bool Zip(const FString& path, TScriptInterface<ISevenZipInterface> progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_SEVEN_ZIP);
+	/* Compresses the file or folder given at path and places the file in the same root folder. Calls ZipUtilityInterface progress events. Not all formats are supported for compression.*/
+	UFUNCTION(BlueprintCallable, Category = ZipUtility)
+	static bool Zip(const FString& path, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_SEVEN_ZIP);
 
-	UFUNCTION(BlueprintCallable, Category = Zipper)
-	static bool GetFileList(const FString& path, TScriptInterface<ISevenZipInterface> listDelegate);
+	/*Queries Archive content list, calls ZipUtilityInterface list events (OnFileFound)*/
+	UFUNCTION(BlueprintCallable, Category = ZipUtility)
+	static bool ListFilesInArchive(const FString& path, UObject* ZipUtilityInterfaceDelegate);
+
+	/*Expects full path including name. you can use this function to rename files.*/
+	UFUNCTION(BlueprintCallable, Category = ZipUtility)
+	static bool MoveFileTo(const FString& from, const FString& to);
+
+	/*Expects full path including folder name.*/
+	UFUNCTION(BlueprintCallable, Category = ZipUtility)
+	static bool CreateDirectoryAt(const FString& fullPath);
 
 private:
-	static ZipUtilityCompressionFormat formatForFileName(const FString& fileName);
 };

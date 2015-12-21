@@ -31,6 +31,7 @@
 
 #include "SevenZipCompressor.h"
 #include "SevenZipExtractor.h"
+#include "SevenZipLister.h"
 
 #include "HideWindowsPlatformTypes.h"
 
