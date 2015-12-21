@@ -1,20 +1,34 @@
 #pragma once
 
+
+#include "SevenZipLibrary.h"
+#include "CompressionFormat.h"
+
+
 namespace SevenZip
 {
 	class ProgressCallback
 	{
 	public:
-		virtual ~ProgressCallback() {}
 
 		/*
-		Called Whenever progress has updated with a float 0-100.0
+		Called at beginning
 		*/
-		virtual void OnProgress(float progress) {}
+		virtual void OnStartWithTotal(unsigned __int64 totalBytes) {}
+
+		/*
+		Called Whenever progress has updated with a bytes complete
+		*/
+		virtual void OnProgress(unsigned __int64 bytesCompleted) {}
 
 		/*
 		Called When progress has reached 100%
 		*/
 		virtual void OnDone() {}
+
+		/*
+		Called When single file progress has reached 100%, returns the filepath that completed
+		*/
+		virtual void OnFileDone(TString filePath, unsigned __int64 bytesCompleted) {}
 	};
 }

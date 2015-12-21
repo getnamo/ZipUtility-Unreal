@@ -3,7 +3,7 @@
 
 #include <exception>
 #include "SevenString.h"
-
+#include "AllowWindowsPlatformTypes.h"
 
 namespace SevenZip
 {
@@ -26,3 +26,5 @@ namespace SevenZip
 		const TString& GetMessage() const;
 	};
 }
+
+#include "HideWindowsPlatformTypes.h"

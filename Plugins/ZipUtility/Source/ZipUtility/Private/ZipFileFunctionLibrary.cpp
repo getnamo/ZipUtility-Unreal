@@ -10,17 +10,84 @@ using namespace SevenZip;
 //Private Namespace
 namespace{
 
+	//Threaded Lambda convenience wrappers
+	FGraphEventRef RunLambdaOnGameThread(TFunction< void()> InFunction)
+	{
+		return FFunctionGraphTask::CreateAndDispatchWhenReady(InFunction, TStatId(), nullptr, ENamedThreads::GameThread);
+	}
+
+	FGraphEventRef RunLambdaOnAnyThread(TFunction< void()> InFunction)
+	{
+		return FFunctionGraphTask::CreateAndDispatchWhenReady(InFunction, TStatId(), nullptr, ENamedThreads::AnyThread);
+	}
+
 	class SevenZipCallbackHandler : public ListCallback, public ProgressCallback
 	{
 	public:
-		virtual void OnProgress(float progress) override
+		//Event Callbacks from the 7zpp library - Forward them to our UE listener
+		/*virtual void OnProgress(uint64 progress) override
 		{
+			const UObject* interfaceDelegate = progressDelegate;
+			const uint64 bytesConst = progress;
 
-		}
+			RunLambdaOnGameThread([interfaceDelegate, bytesConst] {
+				//UE_LOG(LogClass, Log, TEXT("Progress: %d bytes"), progress);
+				((ISevenZipInterface*)interfaceDelegate)->Execute_OnProgress((UObject*)interfaceDelegate, bytesConst);
+			});
+		}*/
+
 		virtual void OnDone() override
 		{
+			const UObject* interfaceDelegate = progressDelegate;
+
+			RunLambdaOnGameThread([interfaceDelegate] {
+				UE_LOG(LogClass, Log, TEXT("All Done!"));
+				((ISevenZipInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate);
+			});
+		}
+
+		virtual void OnFileDone(TString filePath, uint64 bytes) override
+		{
+			const UObject* interfaceDelegate = progressDelegate;
+			const TString filePathConst = filePath;
+			const uint64 bytesConst = bytes;
+
+			RunLambdaOnGameThread([interfaceDelegate, filePathConst, bytesConst] {
+				//UE_LOG(LogClass, Log, TEXT("File Done: %s, %d bytes"), filePathConst.c_str(), bytesConst);
+				((ISevenZipInterface*)interfaceDelegate)->Execute_OnFileDone((UObject*)interfaceDelegate, filePathConst.c_str());
+			});
+
+			//Handle byte decrementing
+			if (bytes > 0) {
+				BytesLeft -= bytes;
+				const float ProgressPercentage = ((double)(TotalBytes-BytesLeft) / (double)TotalBytes) * 100;
+
+				RunLambdaOnGameThread([interfaceDelegate, ProgressPercentage] {
+					//UE_LOG(LogClass, Log, TEXT("Progress: %d bytes"), progress);
+					((ISevenZipInterface*)interfaceDelegate)->Execute_OnProgress((UObject*)interfaceDelegate, ProgressPercentage);
+				});
+			}
 
 		}
+
+		virtual void OnStartWithTotal(unsigned __int64 totalBytes) 
+		{
+			TotalBytes = totalBytes;
+			BytesLeft = TotalBytes;
+			UE_LOG(LogClass, Log, TEXT("Starting with %d bytes"), totalBytes);
+
+			const UObject* interfaceDelegate = progressDelegate;
+			const uint64 bytesConst = TotalBytes;
+
+			RunLambdaOnGameThread([interfaceDelegate, bytesConst] {
+				UE_LOG(LogClass, Log, TEXT("Starting with %d bytes"), bytesConst);
+				((ISevenZipInterface*)interfaceDelegate)->Execute_OnStartProcess((UObject*)interfaceDelegate,bytesConst);
+			});
+		}
+
+		uint64 BytesLeft = 0;
+		uint64 TotalBytes = 0;
+		UObject* progressDelegate;
 	};
 
 	//Private static vars
@@ -43,8 +110,8 @@ namespace{
 #endif
 		//Swap these to change which license you wish to fall under for zip-utility
 
-		FString dllString = FString("7z.dll");	//Using 7z.dll: GNU LGPL + unRAR restriction
-												//FString dllString = FString("7za.dll");	//Using 7za.dll: GNU LGPL license, crucially doesn't support .zip
+		FString dllString = FString("7z.dll");		//Using 7z.dll: GNU LGPL + unRAR restriction
+		//FString dllString = FString("7za.dll");	//Using 7za.dll: GNU LGPL license, crucially doesn't support .zip out of the box
 
 		return FPaths::Combine(*UtilityGameFolder(), TEXT("Plugins/ZipUtility/ThirdParty/7zpp/dll"), *PlatformString, *dllString);
 	}
@@ -109,26 +176,49 @@ namespace{
 										//return CompressionFormat::Unknown;
 	}
 
+	void UnzipOnBGThreadWithFormat(const FString& path, const FString& directory, const UObject* progressDelegate, ZipUtilityCompressionFormat format)
+	{
+		RunLambdaOnAnyThread([progressDelegate,path,format,directory] {
+			UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
+
+			SZLib.Load(*DLLPath());
+
+			UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
+
+			SevenZipExtractor extractor(SZLib, *path);
+			extractor.SetCompressionFormat(libZipFormatFromUEFormat(format));
+
+			UE_LOG(LogClass, Log, TEXT("Calling 7z extract archive"));
+
+			extractor.ExtractArchive(*directory, &PrivateCallback);
+
+			SZLib.Free();
+		});
+	}
+
 }//End private namespace
 
 UZipFileFunctionLibrary::UZipFileFunctionLibrary(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
-	SZLib.Load(*DLLPath());
+	//SZLib.Load(*DLLPath());
 }
 
 UZipFileFunctionLibrary::~UZipFileFunctionLibrary()
 {
-	SZLib.Free();
+	//SZLib.Free();
 }
 
 bool UZipFileFunctionLibrary::Unzip(const FString& path, TScriptInterface<ISevenZipInterface> progressDelegate)
 {
-	return UnzipWithFormat(path, progressDelegate, COMPRESSION_FORMAT_UNKNOWN);
+	return false; // return UnzipWithFormat(path, progressDelegate, COMPRESSION_FORMAT_UNKNOWN);
 }
 
-bool UZipFileFunctionLibrary::UnzipWithFormat(const FString& path, TScriptInterface<ISevenZipInterface> progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
+bool UZipFileFunctionLibrary::UnzipWithFormat(const FString& path, UObject* progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
 {
+
+	UE_LOG(LogClass, Log, TEXT("Unzipping..."));
+
 	//temp for hello world like testing
 	FString directory;
 	FString fileName;
@@ -140,16 +230,45 @@ bool UZipFileFunctionLibrary::UnzipWithFormat(const FString& path, TScriptInterf
 	if (format == COMPRESSION_FORMAT_UNKNOWN)
 		format = formatForFile(fileName);
 
-	SevenZipExtractor extractor(SZLib, *path);
-	extractor.SetCompressionFormat(libZipFormatFromUEFormat(format));
+	PrivateCallback.progressDelegate = progressDelegate;
 
-	//CONTINUE HERE, test extraction, forward progress to some delegate event or interface
-	return extractor.ExtractArchive(*directory, &PrivateCallback);
+	UnzipOnBGThreadWithFormat(path, directory, progressDelegate, format);
+
+/*
+	UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
+
+
+	//Todo: fix the multi-threading problems, ugh
+	//RunLambdaOnGameThread([&, format, path] {
+		SZLib.Load(*DLLPath());
+
+		UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
+
+		PrivateCallback.progressDelegate = progressDelegate;
+
+		SevenZipExtractor extractor(SZLib, *path);
+		extractor.SetCompressionFormat(libZipFormatFromUEFormat(format));
+
+		//ProgressCallback* delegatePointer = &PrivateCallback;
+
+		//ZipUtilityCompressionFormat format = format;
+	
+		//ProgressCallback* delegatePointer = &PrivateCallback;
+		UE_LOG(LogClass, Log, TEXT("Calling 7z extract archive"));
+
+		//TODO: fix forwarding not being called :(!!!!!
+		//TODO: test extraction, forward progress to some delegate event or interface
+		extractor.ExtractArchive(*directory, &PrivateCallback);
+
+		SZLib.Free();
+	//});
+		*/
+	return true;
 }
 
 bool UZipFileFunctionLibrary::Zip(const FString& path, TScriptInterface<ISevenZipInterface> progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
 {
-	//CONTINUE here add basic zip functionality
+	//TODO: add basic zip functionality
 	/*
 	Also see if we can't get this to become event driven so we know when it has finished and/or progress/etc
 	*/

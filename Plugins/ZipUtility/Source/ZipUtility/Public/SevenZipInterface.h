@@ -30,6 +30,19 @@ public:
 		void OnDone();
 
 	/**
+	* Called at beginning of process (NB this only supports providing size information for up to 2gb) TODO: fix bp size issue
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = SevenZipEvents)
+		void OnStartProcess(int32 bytes);
+
+	/**
+	* Called when file action is complete
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = SevenZipEvents)
+		void OnFileDone(const FString& path);
+
+
+	/**
 	* Called when a file is found in the archive (e.g. listing the entries in the archive)
 	* @param path - path of file
 	* @param size - compress size

@@ -29,14 +29,11 @@ public:
 	GENERATED_UCLASS_BODY()
 	~UZipFileFunctionLibrary();
 
-	/*UFUNCTION(BlueprintPure, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", DisplayName = "Create BluJSON Obj", CompactNodeTitle = "JSON", Keywords = "new create blu eye blui json"), Category = Blu)
-		static UBluJsonObj* NewBluJSONObj(UObject* WorldContextObject);*/
-
 	UFUNCTION(BlueprintCallable, Category = Zipper)
 	static bool Unzip(const FString& path, TScriptInterface<ISevenZipInterface> progressDelegate);
 
 	UFUNCTION(BlueprintCallable, Category = Zipper)
-	static bool UnzipWithFormat(const FString& path, TScriptInterface<ISevenZipInterface> progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_UNKNOWN);
+	static bool UnzipWithFormat(const FString& path, UObject* progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_UNKNOWN);
 
 	UFUNCTION(BlueprintCallable, Category = Zipper)
 	static bool Zip(const FString& path, TScriptInterface<ISevenZipInterface> progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_SEVEN_ZIP);
@@ -46,5 +43,4 @@ public:
 
 private:
 	static ZipUtilityCompressionFormat formatForFileName(const FString& fileName);
-	
 };
