@@ -2,7 +2,11 @@ ZipUtility and 7z-cpp Modifications placed under MIT
 
 The MIT License (MIT)
 
+(ZipUtility)
 Copyright (c) Jan Kaniewski (Getnamo)
+
+(7z-cpp)
+Copyright (c) Jan Kaniewski (Getnamo), Keith J. Jones (keithjjones)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
