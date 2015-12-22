@@ -7,6 +7,8 @@ Supports the following compression algorithms:
 
 Plugin works in Windows only.
 
+[Main Forum Thread](https://forums.unrealengine.com/showthread.php?95022-Plugin-ZipUtility-(7zip))
+
 
 ## Quick Install & Setup ##
 
