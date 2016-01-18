@@ -12,7 +12,7 @@ Plugin works in Windows only.
 
 ## Quick Install & Setup ##
 
- 1.	Download
+ 1.	[Download](https://github.com/getnamo/ZipUtility-ue4/releases)
  2.	Create new or choose project.
  3.	Browse to your project folder (typically found at Documents/Unreal Project/{Your Project Root})
  4.	Copy *Plugins* folder into your Project root.
