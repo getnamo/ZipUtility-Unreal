@@ -8,6 +8,12 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
+# Compiled misc
+*.pdb
+
+# Plugin intermediate folders
+/Plugins/ZipUtility/Intermediate
+
 # Windows Installer files
 *.cab
 *.msi

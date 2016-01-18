@@ -6,9 +6,6 @@
 #include "7zpp.h"
 #include "LambdaRunnable.h"
 
-#include "AllowWindowsPlatformTypes.h" 
-#include "Windows.h"
-#include "HideWindowsPlatformTypes.h"
 
 using namespace SevenZip;
 
@@ -38,36 +35,44 @@ namespace{
 		//Event Callbacks from the 7zpp library - Forward them to our UE listener
 		
 		//For now disabled, we use on file done as a progress indicator, this is good enough for generic progress.
-		/*virtual void OnProgress(uint64 progress) override
+		virtual void OnProgress(const TString& archivePath, uint64 bytes) override
 		{
 			const UObject* interfaceDelegate = progressDelegate;
-			const uint64 bytesConst = progress;
+			const uint64 bytesConst = bytes;
+			const FString pathConst = FString(archivePath.c_str());
 
-			RunLambdaOnGameThread([interfaceDelegate, bytesConst] {
-				//UE_LOG(LogClass, Log, TEXT("Progress: %d bytes"), progress);
-				((ISevenZipInterface*)interfaceDelegate)->Execute_OnProgress((UObject*)interfaceDelegate, bytesConst);
-			});
-		}*/
+			if (bytes > 0) {
+				const float ProgressPercentage = ((double)((TotalBytes) - (BytesLeft-bytes)) / (double)TotalBytes) * 100;
 
-		virtual void OnDone() override
+				RunLambdaOnGameThread([interfaceDelegate, pathConst, ProgressPercentage, bytesConst] {
+					//UE_LOG(LogClass, Log, TEXT("Progress: %d bytes"), progress);
+					((IZipUtilityInterface*)interfaceDelegate)->Execute_OnProgress((UObject*)interfaceDelegate, pathConst, ProgressPercentage, bytesConst);
+				});
+			}
+		}
+
+
+		virtual void OnDone(const TString& archivePath) override
 		{
 			const UObject* interfaceDelegate = progressDelegate;
+			const FString pathConst = FString(archivePath.c_str());
 
-			RunLambdaOnGameThread([interfaceDelegate] {
+			RunLambdaOnGameThread([pathConst, interfaceDelegate] {
 				//UE_LOG(LogClass, Log, TEXT("All Done!"));
-				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate);
+				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate, pathConst);
 			});
 		}
 
-		virtual void OnFileDone(TString filePath, uint64 bytes) override
+		virtual void OnFileDone(const TString& archivePath, const TString& filePath, uint64 bytes) override
 		{
 			const UObject* interfaceDelegate = progressDelegate;
-			const TString filePathConst = filePath;
+			const FString pathConst = FString(archivePath.c_str());
+			const FString filePathConst = FString(filePath.c_str());
 			const uint64 bytesConst = bytes;
 
-			RunLambdaOnGameThread([interfaceDelegate, filePathConst, bytesConst] {
+			RunLambdaOnGameThread([interfaceDelegate, pathConst, filePathConst, bytesConst] {
 				//UE_LOG(LogClass, Log, TEXT("File Done: %s, %d bytes"), filePathConst.c_str(), bytesConst);
-				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnFileDone((UObject*)interfaceDelegate, filePathConst.c_str());
+				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnFileDone((UObject*)interfaceDelegate, pathConst, filePathConst);
 			});
 
 			//Handle byte decrementing
@@ -75,41 +80,54 @@ namespace{
 				BytesLeft -= bytes;
 				const float ProgressPercentage = ((double)(TotalBytes-BytesLeft) / (double)TotalBytes) * 100;
 
-				RunLambdaOnGameThread([interfaceDelegate, ProgressPercentage] {
+				RunLambdaOnGameThread([interfaceDelegate, pathConst, ProgressPercentage, bytes] {
 					//UE_LOG(LogClass, Log, TEXT("Progress: %d bytes"), progress);
-					((IZipUtilityInterface*)interfaceDelegate)->Execute_OnProgress((UObject*)interfaceDelegate, ProgressPercentage);
+					((IZipUtilityInterface*)interfaceDelegate)->Execute_OnProgress((UObject*)interfaceDelegate, pathConst, ProgressPercentage, bytes);
 				});
 			}
+
 		}
 
-		virtual void OnStartWithTotal(unsigned __int64 totalBytes) 
+		virtual void OnStartWithTotal(const TString& archivePath, unsigned __int64 totalBytes)
 		{
 			TotalBytes = totalBytes;
 			BytesLeft = TotalBytes;
 
 			const UObject* interfaceDelegate = progressDelegate;
 			const uint64 bytesConst = TotalBytes;
+			const FString pathConst = FString(archivePath.c_str());
 
-			RunLambdaOnGameThread([interfaceDelegate, bytesConst] {
+			RunLambdaOnGameThread([interfaceDelegate, pathConst, bytesConst] {
 				//UE_LOG(LogClass, Log, TEXT("Starting with %d bytes"), bytesConst);
-				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnStartProcess((UObject*)interfaceDelegate,bytesConst);
+				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnStartProcess((UObject*)interfaceDelegate, pathConst, bytesConst);
 			});
 		}
 
-		virtual void OnFileFound(WCHAR* path, int size)
+		virtual void OnFileFound(const TString& archivePath, const TString& filePath, int size)
 		{
 			const UObject* interfaceDelegate = progressDelegate;
 			const uint64 bytesConst = TotalBytes;
-			const FString pathString = FString(path);
+			const FString pathString = FString(archivePath.c_str());
+			const FString fileString = FString(filePath.c_str());
 
-			RunLambdaOnGameThread([interfaceDelegate, pathString, bytesConst] {
-				//UE_LOG(LogClass, Log, TEXT("File Found: %s"), path);
-				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnFileFound((UObject*)interfaceDelegate, pathString, bytesConst);
+			RunLambdaOnGameThread([interfaceDelegate, pathString, fileString, bytesConst] {		
+				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnFileFound((UObject*)interfaceDelegate, pathString, fileString, bytesConst);
+
 			});
 
 			
 		}
 
+		virtual void OnListingDone(const TString& archivePath)
+		{
+			const UObject* interfaceDelegate = progressDelegate;
+			const FString pathString = FString(archivePath.c_str());
+
+			RunLambdaOnGameThread([interfaceDelegate, pathString] {
+				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate, pathString);
+			});
+		}
+		
 		uint64 BytesLeft = 0;
 		uint64 TotalBytes = 0;
 		UObject* progressDelegate;
@@ -226,14 +244,14 @@ namespace{
 	using namespace std;
 
 	//Background Thread convenience functions
-	void UnzipOnBGThreadWithFormat(const FString& path, const FString& directory, const UObject* progressDelegate, ZipUtilityCompressionFormat format)
+	void UnzipOnBGThreadWithFormat(const FString& archivePath, const FString& destinationDirectory, const UObject* progressDelegate, ZipUtilityCompressionFormat format)
 	{
 		PrivateCallback.progressDelegate = (UObject*)progressDelegate;
 
-		RunLongLambdaOnAnyThread([progressDelegate, path, format, directory] {
+		RunLongLambdaOnAnyThread([progressDelegate, archivePath, destinationDirectory, format] {
 
 			//UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
-			SevenZipExtractor extractor(SZLib, *path);
+			SevenZipExtractor extractor(SZLib, *archivePath);
 
 			if (format == COMPRESSION_FORMAT_UNKNOWN) {
 				if (!extractor.DetectCompressionFormat())
@@ -246,17 +264,17 @@ namespace{
 				extractor.SetCompressionFormat(libZipFormatFromUEFormat(format));
 			}
 
-			extractor.ExtractArchive(*directory, &PrivateCallback);
+			extractor.ExtractArchive(*destinationDirectory, &PrivateCallback);
 				
 		});
 	}
 
-	void ListOnBGThread(const FString& path, const FString& directory, const UObject* progressDelegate, ZipUtilityCompressionFormat format)
+	void ListOnBGThread(const FString& path, const FString& directory, const UObject* listDelegate, ZipUtilityCompressionFormat format)
 	{
-		PrivateCallback.progressDelegate = (UObject*)progressDelegate;
+		PrivateCallback.progressDelegate = (UObject*)listDelegate;
 
 		//RunLongLambdaOnAnyThread - this shouldn't take long, but if it lags, swap the lambda methods
-		RunLambdaOnAnyThread([progressDelegate, path, format, directory] {
+		RunLambdaOnAnyThread([listDelegate, path, format, directory] {
 
 			SevenZipLister lister(SZLib, *path);
 
@@ -271,7 +289,7 @@ namespace{
 				lister.SetCompressionFormat(libZipFormatFromUEFormat(format));
 			}
 
-			lister.ListArchive(&PrivateCallback);
+			lister.ListArchive(&PrivateCallback); //&PrivateCallback
 
 		});
 	}
@@ -311,7 +329,7 @@ namespace{
 				compressor.CompressFile(*ReversePathSlashes(path), &PrivateCallback);
 			}
 
-			//Todo: expand to support zipping up contents of folder
+			//Todo: expand to support zipping up contents of current folder
 			//compressor.CompressFiles(*ReversePathSlashes(path), TEXT("*"),  &PrivateCallback);
 
 		});
@@ -330,22 +348,21 @@ UZipFileFunctionLibrary::~UZipFileFunctionLibrary()
 	SZLib.Free();
 }
 
-bool UZipFileFunctionLibrary::Unzip(const FString& path, UObject* progressDelegate)
-{
-	return UnzipWithFormat(path, progressDelegate, COMPRESSION_FORMAT_UNKNOWN);
-}
-
-bool UZipFileFunctionLibrary::UnzipWithFormat(const FString& path, UObject* progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
+bool UZipFileFunctionLibrary::Unzip(const FString& archivePath, UObject* progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
 {
 	FString directory;
 	FString fileName;
 
 	//Check directory validity
-	if (!isValidDirectory(directory, fileName, path))
+	if (!isValidDirectory(directory, fileName, archivePath))
 		return false;
 
-	UnzipOnBGThreadWithFormat(path, directory, progressDelegate, format);
+	return UnzipTo(archivePath, directory, progressDelegate, COMPRESSION_FORMAT_UNKNOWN);
+}
 
+bool UZipFileFunctionLibrary::UnzipTo(const FString& archivePath, const FString& destinationPath, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
+{
+	UnzipOnBGThreadWithFormat(archivePath, destinationPath, ZipUtilityInterfaceDelegate, COMPRESSION_FORMAT_UNKNOWN);
 	return true;
 }
 
@@ -375,16 +392,68 @@ bool UZipFileFunctionLibrary::ListFilesInArchive(const FString& path, UObject* l
 	return true;
 }
 
-bool UZipFileFunctionLibrary::MoveFileTo(const FString& from, const FString& to)
+#include "AllowWindowsPlatformTypes.h"
+#include <shellapi.h>
+
+bool UZipFileFunctionLibrary::MoveFileTo(const FString& From, const FString& To)
 {
 	//Using windows api
-	return 0 != MoveFileW(*from, *to);
+	return 0 != MoveFileW(*From, *To);
 }
 
 
-bool UZipFileFunctionLibrary::CreateDirectoryAt(const FString& fullPath)
+bool UZipFileFunctionLibrary::CreateDirectoryAt(const FString& FullPath)
 {
 	//Using windows api
-	return 0 != CreateDirectoryW(*fullPath, NULL);
+	return 0 != CreateDirectoryW(*FullPath, NULL);
 }
 
+bool UZipFileFunctionLibrary::DeleteFileAt(const FString& FullPath)
+{
+	//Using windows api
+	return 0 != DeleteFileW(*FullPath);
+}
+
+bool UZipFileFunctionLibrary::DeleteEmptyFolder(const FString& FullPath)
+{
+	//Using windows api
+	return 0 != RemoveDirectoryW(*FullPath);
+}
+
+bool IsSubPathOf(const FString& path, const FString& basePath)
+{
+	return path.Contains(basePath);
+}
+
+//Dangerous function not recommended to be exposed to blueprint 
+bool UZipFileFunctionLibrary::DeleteFolderRecursively(const FString& FullPath)
+{
+	//Only allow user to delete folders sub-class to game folder
+	if (!IsSubPathOf(FullPath,FPaths::GameDir()))
+		return false;
+
+	int len = _tcslen(*FullPath);
+	TCHAR *pszFrom = new TCHAR[len + 2];
+	wcscpy_s(pszFrom, len + 2, *FullPath);
+	pszFrom[len] = 0;
+	pszFrom[len + 1] = 0;
+
+	SHFILEOPSTRUCT fileop;
+	fileop.hwnd = NULL;    // no status display
+	fileop.wFunc = FO_DELETE;  // delete operation
+	fileop.pFrom = pszFrom;  // source file name as double null terminated string
+	fileop.pTo = NULL;    // no destination needed
+	fileop.fFlags = FOF_NOCONFIRMATION | FOF_SILENT;  // do not prompt the user
+
+	fileop.fAnyOperationsAborted = FALSE;
+	fileop.lpszProgressTitle = NULL;
+	fileop.hNameMappings = NULL;
+
+	int ret = SHFileOperation(&fileop);
+	delete[] pszFrom;
+	return (ret == 0);
+}
+
+
+
+#include "HideWindowsPlatformTypes.h"

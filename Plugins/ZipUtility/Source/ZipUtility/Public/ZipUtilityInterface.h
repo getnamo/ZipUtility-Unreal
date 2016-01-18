@@ -10,7 +10,7 @@ class UZipUtilityInterface : public UInterface
 	GENERATED_UINTERFACE_BODY()
 };
 
-class IZipUtilityInterface
+class ZIPUTILITY_API IZipUtilityInterface
 {
 	GENERATED_IINTERFACE_BODY()
 
@@ -20,27 +20,27 @@ public:
 	* Called during process as it completes. Currently updates on per file progress.
 	* @param percentage - percentage done
 	*/
-	UFUNCTION(BlueprintImplementableEvent, Category = ZipUtilityProgressEvents)
-		void OnProgress(float percentage);
+	UFUNCTION(BlueprintNativeEvent, Category = ZipUtilityProgressEvents)
+		void OnProgress(const FString& archive, float percentage, int32 bytes);
 
 	/**
 	* Called when whole process is complete (e.g. unzipping completed on archive)
 	*/
-	UFUNCTION(BlueprintImplementableEvent, Category = ZipUtilityProgressEvents)
-		void OnDone();
+	UFUNCTION(BlueprintNativeEvent, Category = ZipUtilityProgressEvents)
+		void OnDone(const FString& archive);
 
 	/**
 	* Called at beginning of process (NB this only supports providing size information for up to 2gb) TODO: fix 32bit BP size issue
 	*/
-	UFUNCTION(BlueprintImplementableEvent, Category = ZipUtilityProgressEvents)
-		void OnStartProcess(int32 bytes);
+	UFUNCTION(BlueprintNativeEvent, Category = ZipUtilityProgressEvents)
+		void OnStartProcess(const FString& archive, int32 bytes);
 
 	/**
 	* Called when file process is complete
 	* @param path - path of the file that finished
 	*/
-	UFUNCTION(BlueprintImplementableEvent, Category = ZipUtilityProgressEvents)
-		void OnFileDone(const FString& path);
+	UFUNCTION(BlueprintNativeEvent, Category = ZipUtilityProgressEvents)
+		void OnFileDone(const FString& archive, const FString& file);
 
 
 	/**
@@ -48,6 +48,6 @@ public:
 	* @param path - path of file
 	* @param size - compressed size
 	*/
-	UFUNCTION(BlueprintImplementableEvent, Category = ZipUtilityListEvents)
-		void OnFileFound(const FString& path, int32 size);
+	UFUNCTION(BlueprintNativeEvent, Category = ZipUtilityListEvents)
+		void OnFileFound(const FString& archive, const FString& file, int32 size);
 };

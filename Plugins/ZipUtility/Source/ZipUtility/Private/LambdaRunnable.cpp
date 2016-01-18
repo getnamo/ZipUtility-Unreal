@@ -14,12 +14,16 @@ FLambdaRunnable::FLambdaRunnable(TFunction< void()> InFunction)
 	FString threadStatGroup = FString::Printf(TEXT("FLambdaRunnable%d"), ThreadNumber);
 	Thread = FRunnableThread::Create(this, *threadStatGroup, 0, TPri_BelowNormal); //windows default = 8mb for thread, could specify more
 	ThreadNumber++;
+
+	//Runnables.Add(this);
 }
 
 FLambdaRunnable::~FLambdaRunnable()
 {
 	delete Thread;
 	Thread = NULL;
+
+	//Runnables.Remove(this);
 }
 
 //Init
@@ -32,9 +36,6 @@ bool FLambdaRunnable::Init()
 //Run
 uint32 FLambdaRunnable::Run()
 {
-	//Initial wait before starting
-	//FPlatformProcess::Sleep(0.03);
-
 	if (FunctionPointer)
 		FunctionPointer();
 
@@ -52,7 +53,7 @@ void FLambdaRunnable::Exit()
 {
 	Finished = true;
 	//UE_LOG(LogClass, Log, TEXT("FLambdaRunnable %d Exit"), Number);
-	
+
 	//delete ourselves when we're done
 	delete this;
 }

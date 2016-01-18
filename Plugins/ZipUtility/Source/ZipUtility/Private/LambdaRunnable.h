@@ -6,6 +6,7 @@ completion.
 */
 class FLambdaRunnable : public FRunnable
 {
+private:
 	/** Thread to run the worker FRunnable on */
 	FRunnableThread* Thread;
 	uint64 Number;
@@ -13,10 +14,10 @@ class FLambdaRunnable : public FRunnable
 	//Lambda function pointer
 	TFunction< void()> FunctionPointer;
 
-	/** Stop this thread? Uses Thread Safe Counter */
+	/** Use this thread-safe boolean to allow early exits for your threads */
 	FThreadSafeBool Finished;
 
-	static TArray<FLambdaRunnable*> Runnables;
+	//static TArray<FLambdaRunnable*> Runnables;
 	static uint64 ThreadNumber;
 
 public:

@@ -33,18 +33,23 @@
 #include "SevenZipExtractor.h"
 #include "SevenZipLister.h"
 
+// Version of this library
+#define SEVENZIP_VERSION L"0.2.0-20160117.1"
+#define SEVENZIP_BRANCH L"master"
+
 #include "HideWindowsPlatformTypes.h"
 
 #ifdef _DEBUG
-	#ifdef _UNICODE
-		#pragma comment ( lib, "7zpp_ud.lib" )
-	#else
-		#pragma comment ( lib, "7zpp_ad.lib" )
-	#endif
+#ifdef _UNICODE
+#pragma comment ( lib, "7zpp_ud.lib" )
 #else
-	#ifdef _UNICODE
-		#pragma comment ( lib, "7zpp_u.lib" )
-	#else
-		#pragma comment ( lib, "7zpp_a.lib" )
-	#endif
+#pragma comment ( lib, "7zpp_ad.lib" )
 #endif
+#else
+#ifdef _UNICODE
+#pragma comment ( lib, "7zpp_u.lib" )
+#else
+#pragma comment ( lib, "7zpp_a.lib" )
+#endif
+#endif
+
