@@ -12,6 +12,7 @@ FLambdaRunnable::FLambdaRunnable(TFunction< void()> InFunction)
 	Number = ThreadNumber;
 	
 	FString threadStatGroup = FString::Printf(TEXT("FLambdaRunnable%d"), ThreadNumber);
+	Thread = NULL; 
 	Thread = FRunnableThread::Create(this, *threadStatGroup, 0, TPri_BelowNormal); //windows default = 8mb for thread, could specify more
 	ThreadNumber++;
 
@@ -20,8 +21,11 @@ FLambdaRunnable::FLambdaRunnable(TFunction< void()> InFunction)
 
 FLambdaRunnable::~FLambdaRunnable()
 {
-	delete Thread;
-	Thread = NULL;
+	if (Thread == NULL)
+	{
+		delete Thread;
+		Thread = NULL;
+	}
 
 	//Runnables.Remove(this);
 }
