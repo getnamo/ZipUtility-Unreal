@@ -3,7 +3,11 @@
 
 UZipFileFunctionInternalCallback::UZipFileFunctionInternalCallback()
 {
-
+	CompressionFormat = ZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN;
+	DestinationFolder = FString();
+	File = FString();
+	FileIndex = 0;
+	Callback = NULL;
 }
 
 void UZipFileFunctionInternalCallback::OnFileFound_Implementation(const FString& archive, const FString& fileIn, int32 size)
