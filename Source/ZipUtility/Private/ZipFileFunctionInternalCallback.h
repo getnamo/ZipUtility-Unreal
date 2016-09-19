@@ -11,23 +11,32 @@ class ZIPUTILITY_API UZipFileFunctionInternalCallback : public UObject, public I
 private:
 
 	/** Compression format used to unzip */
+	UPROPERTY(Transient)
 	TEnumAsByte<ZipUtilityCompressionFormat> CompressionFormat;
 
 	/** Path of the file */
+	UPROPERTY(Transient)
 	FString File;
 
+	UPROPERTY(Transient)
 	FString DestinationFolder;
 
 	/** Current File index parsed */
+	UPROPERTY(Transient)
 	int32 FileIndex = 0;
 
 	/** Callback object */
 	UPROPERTY(Transient)
 	UObject* Callback;
 
-	bool bSingleFile = false;
-	bool bFileFound = false;
-	bool bUnzipto = false;
+	UPROPERTY(Transient)
+	bool bSingleFile;
+
+	UPROPERTY(Transient)
+	bool bFileFound;
+
+	UPROPERTY(Transient)
+	bool bUnzipto;
 
 public:
 	UZipFileFunctionInternalCallback();

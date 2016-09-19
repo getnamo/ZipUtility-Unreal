@@ -131,9 +131,7 @@ namespace{
 		uint64 BytesLeft = 0;
 		uint64 TotalBytes = 0;
 		UObject* progressDelegate;
-		
-		UZipFileFunctionInternalCallback* InternalCallback; 
-	};
+};
 
 	//Private static vars
 	SevenZipCallbackHandler PrivateCallback;
@@ -376,33 +374,50 @@ namespace{
 
 }//End private namespace
 
+
+UZipFileFunctionInternalCallback* UZipFileFunctionLibrary::InternalCallback = NULL;
+
 UZipFileFunctionLibrary::UZipFileFunctionLibrary(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
 	SZLib.Load(*DLLPath());
-	PrivateCallback.InternalCallback = NewObject<UZipFileFunctionInternalCallback>();
-	PrivateCallback.InternalCallback->SetFlags(RF_Standalone);
 }
 
 UZipFileFunctionLibrary::~UZipFileFunctionLibrary()
 {
 	SZLib.Free();
+	if (InternalCallback && InternalCallback->IsValidLowLevel())
+	{
+		InternalCallback->ConditionalBeginDestroy();
+	}
+
 }
 
 bool UZipFileFunctionLibrary::UnzipFileNamed(const FString& archivePath, const FString& Name, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format /*= COMPRESSION_FORMAT_UNKNOWN*/)
 {	
-	PrivateCallback.InternalCallback->SetCallback(Name, ZipUtilityInterfaceDelegate, format);
+	if (!InternalCallback || !InternalCallback->IsValidLowLevel())
+	{
+		InternalCallback = NewObject<UZipFileFunctionInternalCallback>();
+		InternalCallback->SetFlags(RF_MarkAsRootSet);
+	}
+	InternalCallback->SetCallback(Name, ZipUtilityInterfaceDelegate, format);
 
-	ListFilesInArchive(archivePath, PrivateCallback.InternalCallback, format);
+	ListFilesInArchive(archivePath, InternalCallback, format);
 
 	return true;
 }
 
 bool UZipFileFunctionLibrary::UnzipFileNamedTo(const FString& archivePath, const FString& Name, const FString& destinationPath, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format /*= COMPRESSION_FORMAT_UNKNOWN*/)
 {
-	PrivateCallback.InternalCallback->SetCallback(Name, destinationPath, ZipUtilityInterfaceDelegate, format);
 
-	ListFilesInArchive(archivePath, PrivateCallback.InternalCallback, format);
+	if (!InternalCallback || !InternalCallback->IsValidLowLevel())
+	{
+		InternalCallback = NewObject<UZipFileFunctionInternalCallback>();
+		InternalCallback->SetFlags(RF_MarkAsRootSet);
+	}
+	InternalCallback->SetCallback(Name, destinationPath, ZipUtilityInterfaceDelegate, format);
+
+	ListFilesInArchive(archivePath, InternalCallback, format);
 
 	return true;
 }
