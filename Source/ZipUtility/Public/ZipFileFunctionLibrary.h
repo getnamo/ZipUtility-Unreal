@@ -84,6 +84,13 @@ public:
 	/*Dangerous function, not exposed to blueprint. */
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
 	static bool DeleteFolderRecursively(const FString& FullPath);
+
+	UFUNCTION(BlueprintCallable, Category = ZipUtility)
+	static void WatchFolder(const FString& FullPath, UObject* WatcherDelegate);
+
+
+private:
+	static void WatchFolderOnBgThread(const FString& FullPath, UObject* WatcherDelegate);
 };
 
 

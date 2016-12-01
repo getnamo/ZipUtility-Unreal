@@ -42,5 +42,10 @@ public:
 	*/
 	static FLambdaRunnable* RunLambdaOnBackGroundThread(TFunction< void()> InFunction);
 
+	/*
+	Runs a short lambda on the game thread via task graph system
+	*/
+	static FGraphEventRef RunShortLambdaOnGameThread(TFunction< void()> InFunction);
+
 	static void ShutdownThreads();
 };
