@@ -206,8 +206,6 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 	FString DirectoryString;
 	const UObject* WatcherDelegate = WatcherPtr->Delegate;
 
-	UE_LOG(LogTemp, Log, TEXT("\n Waiting on loop start."));
-
 	//Wait while the runnable pointer hasn't been set
 
 	TotalWatchers++;
@@ -216,8 +214,7 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 	while (WatcherPtr->ShouldRun)	//Watcher.Runnable->Finished == false
 	{
 		// Wait for notification.
-
-		UE_LOG(LogTemp, Log, TEXT("\nWaiting for notification...\n"));
+		//UE_LOG(LogTemp, Log, TEXT("\nWaiting for notification...\n"));
 
 		dwWaitStatus = WaitForMultipleObjects(2, dwChangeHandles,
 			FALSE, INFINITE);
