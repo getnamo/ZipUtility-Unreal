@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ZipUtilityPrivatePCH.h"
+#include "WindowsFileUtilityPrivatePCH.h"
 #include "LambdaRunnable.h"
 
 uint64 FLambdaRunnable::ThreadNumber = 0;
@@ -81,6 +81,11 @@ FLambdaRunnable* FLambdaRunnable::RunLambdaOnBackGroundThread(TFunction< void()>
 	{
 		return nullptr;
 	}
+}
+
+FGraphEventRef FLambdaRunnable::RunShortLambdaOnGameThread(TFunction< void()> InFunction)
+{
+	return FFunctionGraphTask::CreateAndDispatchWhenReady(InFunction, TStatId(), nullptr, ENamedThreads::GameThread);
 }
 
 void FLambdaRunnable::ShutdownThreads()
