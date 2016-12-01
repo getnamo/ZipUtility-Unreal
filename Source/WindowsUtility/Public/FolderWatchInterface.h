@@ -10,7 +10,7 @@ class UFolderWatchInterface : public UInterface
 	GENERATED_UINTERFACE_BODY()
 };
 
-class ZIPUTILITY_API IFolderWatchInterface
+class WINDOWSFILEUTILITY_API IFolderWatchInterface
 {
 	GENERATED_IINTERFACE_BODY()
 
@@ -23,6 +23,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = FolderWatchEvent)
 	void OnFileChanged(const FString& FilePath);
 
+	/**
+	* Called when a directory inside the folder has changed
+	* @param FilePath Path of the file that has changed
+	*/
 	UFUNCTION(BlueprintNativeEvent, Category = FolderWatchEvent)
 	void OnDirectoryChanged(const FString& FilePath);
 };

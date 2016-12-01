@@ -1,11 +1,15 @@
 #include "WindowsFileUtilityPrivatePCH.h"
 #include "WindowsFileUtilityFunctionLibrary.h"
 
+//static TMAP definition
+TMap<FString, TArray<FWatcher>> UWindowsFileUtilityFunctionLibrary::Watchers = TMap<FString, TArray<FWatcher>>();
+
 UWindowsFileUtilityFunctionLibrary::UWindowsFileUtilityFunctionLibrary(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
 }
 
+#if PLATFORM_WINDOWS
 
 #include "AllowWindowsPlatformTypes.h"
 #include <shellapi.h>
@@ -69,15 +73,56 @@ bool UWindowsFileUtilityFunctionLibrary::DeleteFolderRecursively(const FString& 
 	return (ret == 0);
 }
 
-
-
 void UWindowsFileUtilityFunctionLibrary::WatchFolder(const FString& FullPath, UObject* WatcherDelegate)
 {
 	//fork this off to another process
-	FLambdaRunnable::RunLambdaOnBackGroundThread([FullPath, WatcherDelegate]()
+	FLambdaRunnable* Runnable = FLambdaRunnable::RunLambdaOnBackGroundThread([FullPath, WatcherDelegate]()
 	{
-		//UZipFileFunctionLibrary::WatchFolderOnBgThread(FullPath, WatcherDelegate);
+		 UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(FullPath, WatcherDelegate);
 	});
+
+	//Add to watchers
+	FWatcher FreshWatcher;
+	FreshWatcher.Delegate = WatcherDelegate;
+	FreshWatcher.Path = FullPath;
+	FreshWatcher.Runnable = Runnable;
+
+	//Do we have an entry?
+	if (!Watchers.Contains(FullPath))
+	{
+		//Make an entry
+		TArray<FWatcher> FreshList;
+		Watchers[FullPath] = FreshList;
+	}
+
+	TArray<FWatcher> PathWatchers = Watchers[FullPath];
+	PathWatchers.Add(FreshWatcher);
+}
+
+void UWindowsFileUtilityFunctionLibrary::StopWatchingFolder(const FString& FullPath, UObject* WatcherDelegate)
+{
+
+	//Do we have an entry?
+	if (!Watchers.Contains(FullPath))
+	{
+		return;
+	}
+
+	//We have an entry for this path, remove our watcher
+	TArray<FWatcher> PathWatchers = Watchers[FullPath];
+	for (int i = 0; i < PathWatchers.Num();i++)
+	{
+		FWatcher& PathWatcher = PathWatchers[i];
+		if (PathWatcher.Delegate == WatcherDelegate)
+		{
+			//Stop the runnable
+			PathWatcher.Runnable->Stop();
+
+			//Remove the watcher and we're done
+			PathWatchers.RemoveAt(i);
+			break;
+		}
+	}
 }
 
 void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& FullPath, UObject* WatcherDelegate)
@@ -88,7 +133,7 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 	//TODO: wrap this function in a quittable thing, only one watcher per thing
 	//TODO: find out which file changed
 
-	/*
+	
 	DWORD dwWaitStatus;
 	HANDLE dwChangeHandles[2];
 	TCHAR lpDrive[4];
@@ -193,7 +238,9 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 			return;
 			break;
 		}
-	}*/
+	}
 }
 
 #include "HideWindowsPlatformTypes.h"
+
+#endif

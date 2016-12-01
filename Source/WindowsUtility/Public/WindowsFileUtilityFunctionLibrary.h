@@ -1,6 +1,22 @@
 #pragma once
 
+#include "LambdaRunnable.h"
 #include "WindowsFileUtilityFunctionLibrary.generated.h"
+
+//Struct to Track which delegate is watching files
+USTRUCT()
+struct FWatcher
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+	TWeakObjectPtr<UObject> Delegate;
+	
+	UPROPERTY()
+	FString Path;
+
+	FLambdaRunnable* Runnable;
+};
 
 UCLASS(ClassGroup = WindowsFileUtility, Blueprintable)
 class WINDOWSFILEUTILITY_API UWindowsFileUtilityFunctionLibrary : public UBlueprintFunctionLibrary
@@ -33,6 +49,8 @@ class WINDOWSFILEUTILITY_API UWindowsFileUtilityFunctionLibrary : public UBluepr
 	UFUNCTION(BlueprintCallable, Category = WindowsFileUtility)
 	static void StopWatchingFolder(const FString& FullPath, UObject* WatcherDelegate);
 
+
 private:
 	static void WatchFolderOnBgThread(const FString& FullPath, UObject* WatcherDelegate);
+	static TMap<FString, TArray<FWatcher>> Watchers;
 };
