@@ -4,19 +4,22 @@
 #include "WindowsFileUtilityFunctionLibrary.generated.h"
 
 //Struct to Track which delegate is watching files
-USTRUCT()
 struct FWatcher
 {
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY()
-	TWeakObjectPtr<UObject> Delegate;
+	UObject* Delegate;
 	
-	UPROPERTY()
 	FString Path;
 
-	FLambdaRunnable* Runnable;
+	FLambdaRunnable* Runnable = nullptr;
+
+	FThreadSafeBool ShouldRun = true;
+	
 };
+
+inline bool operator==(const FWatcher& lhs, const FWatcher& rhs)
+{
+	return lhs.Delegate == rhs.Delegate;
+}
 
 UCLASS(ClassGroup = WindowsFileUtility, Blueprintable)
 class WINDOWSFILEUTILITY_API UWindowsFileUtilityFunctionLibrary : public UBlueprintFunctionLibrary
@@ -43,14 +46,15 @@ class WINDOWSFILEUTILITY_API UWindowsFileUtilityFunctionLibrary : public UBluepr
 	UFUNCTION(BlueprintCallable, Category = WindowsFileUtility)
 	static bool DeleteFolderRecursively(const FString& FullPath);
 
+	/** Watch a folder for change. WatcherDelegate should respond to FolderWatchInterface*/
 	UFUNCTION(BlueprintCallable, Category = WindowsFileUtility)
 	static void WatchFolder(const FString& FullPath, UObject* WatcherDelegate);
 
+	/** Stop watching a folder for change. WatcherDelegate should respond to FolderWatchInterface*/
 	UFUNCTION(BlueprintCallable, Category = WindowsFileUtility)
 	static void StopWatchingFolder(const FString& FullPath, UObject* WatcherDelegate);
 
-
 private:
-	static void WatchFolderOnBgThread(const FString& FullPath, UObject* WatcherDelegate);
+	static void WatchFolderOnBgThread(const FString& FullPath, const FWatcher* Watcher);
 	static TMap<FString, TArray<FWatcher>> Watchers;
 };

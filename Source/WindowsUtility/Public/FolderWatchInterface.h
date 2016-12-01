@@ -21,12 +21,12 @@ public:
 	* @param FilePath Path of the file that has changed
 	*/
 	UFUNCTION(BlueprintNativeEvent, Category = FolderWatchEvent)
-	void OnFileChanged(const FString& FilePath);
+	void OnFileChanged(const FString& FileName, const FString& FilePath);
 
 	/**
 	* Called when a directory inside the folder has changed
 	* @param FilePath Path of the file that has changed
 	*/
 	UFUNCTION(BlueprintNativeEvent, Category = FolderWatchEvent)
-	void OnDirectoryChanged(const FString& FilePath);
+	void OnDirectoryChanged(const FString& DirectoryName, const FString& DirectoryPath);
 };

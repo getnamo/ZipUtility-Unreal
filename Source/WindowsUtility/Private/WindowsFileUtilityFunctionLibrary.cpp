@@ -3,6 +3,7 @@
 
 //static TMAP definition
 TMap<FString, TArray<FWatcher>> UWindowsFileUtilityFunctionLibrary::Watchers = TMap<FString, TArray<FWatcher>>();
+int TotalWatchers = 0;
 
 UWindowsFileUtilityFunctionLibrary::UWindowsFileUtilityFunctionLibrary(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
@@ -75,33 +76,52 @@ bool UWindowsFileUtilityFunctionLibrary::DeleteFolderRecursively(const FString& 
 
 void UWindowsFileUtilityFunctionLibrary::WatchFolder(const FString& FullPath, UObject* WatcherDelegate)
 {
-	//fork this off to another process
-	FLambdaRunnable* Runnable = FLambdaRunnable::RunLambdaOnBackGroundThread([FullPath, WatcherDelegate]()
+	//Do we have an entry for this path?
+	if (!Watchers.Contains(FullPath))
 	{
-		 UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(FullPath, WatcherDelegate);
-	});
+		//Make an entry
+		TArray<FWatcher> FreshList;
+		Watchers.Add(FullPath, FreshList);
+		Watchers[FullPath] = FreshList;
+	}
+	else
+	{
+		//if we do do we already watch from this object?
+		TArray<FWatcher>& PathWatchers = Watchers[FullPath];
+
+		for (auto Watcher : PathWatchers)
+		{
+			if (Watcher.Delegate == WatcherDelegate)
+			{
+				//Already accounted for
+				UE_LOG(LogTemp, Warning, TEXT("UWindowsFileUtilityFunctionLibrary::WatchFolder Duplicate watcher ignored!"));
+				return;
+			}
+		}
+	}
+
 
 	//Add to watchers
 	FWatcher FreshWatcher;
 	FreshWatcher.Delegate = WatcherDelegate;
 	FreshWatcher.Path = FullPath;
+
+	const FWatcher* WatcherPtr = &FreshWatcher;
+
+	//fork this off to another process
+	FLambdaRunnable* Runnable = FLambdaRunnable::RunLambdaOnBackGroundThread([FullPath, WatcherDelegate, WatcherPtr]()
+	{
+		 UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(FullPath, WatcherPtr);
+	});
+
 	FreshWatcher.Runnable = Runnable;
 
-	//Do we have an entry?
-	if (!Watchers.Contains(FullPath))
-	{
-		//Make an entry
-		TArray<FWatcher> FreshList;
-		Watchers[FullPath] = FreshList;
-	}
-
-	TArray<FWatcher> PathWatchers = Watchers[FullPath];
+	TArray<FWatcher>& PathWatchers = Watchers[FullPath];
 	PathWatchers.Add(FreshWatcher);
 }
 
 void UWindowsFileUtilityFunctionLibrary::StopWatchingFolder(const FString& FullPath, UObject* WatcherDelegate)
 {
-
 	//Do we have an entry?
 	if (!Watchers.Contains(FullPath))
 	{
@@ -116,6 +136,7 @@ void UWindowsFileUtilityFunctionLibrary::StopWatchingFolder(const FString& FullP
 		if (PathWatcher.Delegate == WatcherDelegate)
 		{
 			//Stop the runnable
+			PathWatcher.ShouldRun = false;
 			PathWatcher.Runnable->Stop();
 
 			//Remove the watcher and we're done
@@ -125,20 +146,22 @@ void UWindowsFileUtilityFunctionLibrary::StopWatchingFolder(const FString& FullP
 	}
 }
 
-void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& FullPath, UObject* WatcherDelegate)
+void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& FullPath, const FWatcher* WatcherPtr)
 {
 	//mostly from https://msdn.microsoft.com/en-us/library/windows/desktop/aa365261(v=vs.85).aspx
 	//call the delegate when the folder changes
 
-	//TODO: wrap this function in a quittable thing, only one watcher per thing
 	//TODO: find out which file changed
-
 	
 	DWORD dwWaitStatus;
 	HANDLE dwChangeHandles[2];
 	TCHAR lpDrive[4];
 	TCHAR lpFile[_MAX_FNAME];
 	TCHAR lpExt[_MAX_EXT];
+
+	//finding out about the notification
+	FILE_NOTIFY_INFORMATION strFileNotifyInfo[1024];
+	DWORD dwBytesReturned = 0;
 
 	_tsplitpath_s(*FullPath, lpDrive, 4, NULL, 0, lpFile, _MAX_FNAME, lpExt, _MAX_EXT);
 	lpDrive[2] = (TCHAR)'\\';
@@ -149,7 +172,8 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 	dwChangeHandles[0] = FindFirstChangeNotification(
 		*FullPath,                     // directory to watch 
 		TRUE,						   // watch the subtree 
-		FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE	// watch file name changes 
+		FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE | 
+		FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_ATTRIBUTES	| FILE_NOTIFY_CHANGE_SIZE// watch for generic file changes
 		); // watch last write or file size change
 
 	if (dwChangeHandles[0] == INVALID_HANDLE_VALUE)
@@ -178,27 +202,58 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 		//ExitProcess(GetLastError());
 	}
 	const FString DrivePath = FString(lpDrive);
+	FString FileString;
+	FString DirectoryString;
+	const UObject* WatcherDelegate = WatcherPtr->Delegate;
 
-	while (TRUE)
+	UE_LOG(LogTemp, Log, TEXT("\n Waiting on loop start."));
+
+	//Wait while the runnable pointer hasn't been set
+
+	TotalWatchers++;
+	UE_LOG(LogTemp, Log, TEXT("\nStarting Watcher loop %d...\n"), TotalWatchers);
+
+	while (WatcherPtr->ShouldRun)	//Watcher.Runnable->Finished == false
 	{
 		// Wait for notification.
 
-		UE_LOG(LogTemp, Warning, TEXT("\nWaiting for notification...\n"));
+		UE_LOG(LogTemp, Log, TEXT("\nWaiting for notification...\n"));
 
 		dwWaitStatus = WaitForMultipleObjects(2, dwChangeHandles,
 			FALSE, INFINITE);
+
+		if (!WatcherPtr->ShouldRun)
+		{
+			UE_LOG(LogTemp, Log, TEXT("\nStop called while sleeping\n"));
+			break;
+		}
+		if (!WatcherDelegate->IsValidLowLevel())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("\nInvalid Watcher Delegate, exiting watch\n"));
+			break;
+		}
 
 		switch (dwWaitStatus)
 		{
 		case WAIT_OBJECT_0:
 
+			ReadDirectoryChangesW(dwChangeHandles[0], (LPVOID)&strFileNotifyInfo, sizeof(strFileNotifyInfo), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE, &dwBytesReturned, NULL, NULL);
+			//UE_LOG(LogTemp, Warning, TEXT("Received info about: %s"), strFileNotifyInfo->FileName);
+
+			FileString = FString(strFileNotifyInfo[0].FileNameLength, strFileNotifyInfo[0].FileName);
+
 			// A file was created, renamed, or deleted in the directory.
 			// Refresh this directory and restart the notification.
 
-			FLambdaRunnable::RunShortLambdaOnGameThread([FullPath, WatcherDelegate]()
+			
+
+			FLambdaRunnable::RunShortLambdaOnGameThread([FullPath, FileString, WatcherDelegate]()
 			{
-				//RefreshDirectory
-				((IFolderWatchInterface*)WatcherDelegate)->Execute_OnFileChanged((UObject*)WatcherDelegate, FullPath);
+				if (WatcherDelegate->GetClass()->ImplementsInterface(UFolderWatchInterface::StaticClass()))
+				{
+					FString FilePath = FString::Printf(TEXT("%s\\%s"), *FullPath, *FileString);
+					((IFolderWatchInterface*)WatcherDelegate)->Execute_OnFileChanged((UObject*)WatcherDelegate, FileString, FilePath);
+				}
 			});
 			if (FindNextChangeNotification(dwChangeHandles[0]) == FALSE)
 			{
@@ -211,10 +266,17 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 
 			// A directory was created, renamed, or deleted.
 			// Refresh the tree and restart the notification.
-			FLambdaRunnable::RunShortLambdaOnGameThread([DrivePath, WatcherDelegate]()
+
+			ReadDirectoryChangesW(dwChangeHandles[1], (LPVOID)&strFileNotifyInfo, sizeof(strFileNotifyInfo), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE, &dwBytesReturned, NULL, NULL);
+			DirectoryString = FString(strFileNotifyInfo[0].FileNameLength, strFileNotifyInfo[0].FileName);
+
+			FLambdaRunnable::RunShortLambdaOnGameThread([FullPath, WatcherDelegate, DirectoryString]()
 			{
-				//RefreshTree(lpDrive)
-				((IFolderWatchInterface*)WatcherDelegate)->Execute_OnDirectoryChanged((UObject*)WatcherDelegate, DrivePath);
+				if (WatcherDelegate->GetClass()->ImplementsInterface(UFolderWatchInterface::StaticClass()))
+				{
+					FString ChangedDirectoryPath = FString::Printf(TEXT("%s\\%s"), *FullPath, *DirectoryString);
+					((IFolderWatchInterface*)WatcherDelegate)->Execute_OnDirectoryChanged((UObject*)WatcherDelegate, DirectoryString, ChangedDirectoryPath);
+				}
 			});
 			if (FindNextChangeNotification(dwChangeHandles[1]) == FALSE)
 			{
@@ -239,6 +301,9 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 			break;
 		}
 	}
+
+	TotalWatchers--;
+	UE_LOG(LogTemp, Log, TEXT("\n Watcher loop stopped, total now: %d.\n"), TotalWatchers);
 }
 
 #include "HideWindowsPlatformTypes.h"

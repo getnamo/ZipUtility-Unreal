@@ -14,14 +14,13 @@ private:
 	//Lambda function pointer
 	TFunction< void()> FunctionPointer;
 
-	/** Use this thread-safe boolean to allow early exits for your threads */
-	FThreadSafeBool Finished;
-
 	//static TArray<FLambdaRunnable*> Runnables;
 	static uint64 ThreadNumber;
 
 public:
 	//~~~ Thread Core Functions ~~~
+	/** Use this thread-safe boolean to allow early exits for your threads */
+	FThreadSafeBool Finished;
 
 	//Constructor / Destructor
 	FLambdaRunnable(TFunction< void()> InFunction);
