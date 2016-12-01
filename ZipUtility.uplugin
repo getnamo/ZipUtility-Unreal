@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "0.1.3",
+	"VersionName": "0.2.0",
 	"FriendlyName": "ZipUtility",
 	"Description": "",
 	"Category": "Utility",
@@ -18,7 +18,11 @@
 		{
 			"Name": "ZipUtility",
 			"Type": "Developer",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Win32"
+			]
 		}
 	]
 }
