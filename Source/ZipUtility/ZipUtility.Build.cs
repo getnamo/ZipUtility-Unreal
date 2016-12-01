@@ -37,6 +37,7 @@ public class ZipUtility : ModuleRules
             new string[]
             {
                 "Core",
+                "WindowsFileUtility"
 				// ... add other public dependencies that you statically link with here ...
 			}
             );

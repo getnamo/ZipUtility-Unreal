@@ -4,7 +4,7 @@
 Long duration lambda wrapper, which are generally not supported by the taskgraph system. New thread per lambda and they will auto-delete upon
 completion.
 */
-class FLambdaRunnable : public FRunnable
+class WINDOWSFILEUTILITY_API FLambdaRunnable : public FRunnable
 {
 private:
 	/** Thread to run the worker FRunnable on */
