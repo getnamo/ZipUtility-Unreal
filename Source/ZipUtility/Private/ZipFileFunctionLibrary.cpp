@@ -134,7 +134,6 @@ namespace{
 };
 
 	//Private static vars
-	SevenZipCallbackHandler PrivateCallback;
 	SevenZipLibrary SZLib;
 
 	//Utility functions
@@ -248,10 +247,9 @@ namespace{
 		//Background Thread convenience functions
 	void UnzipFilesOnBGThreadWithFormat(const TArray<int32> fileIndices, const FString& archivePath, const FString& destinationDirectory, const UObject* progressDelegate, ZipUtilityCompressionFormat format)
 	{
-		PrivateCallback.progressDelegate = (UObject*)progressDelegate;
-
 		RunLongLambdaOnAnyThread([progressDelegate, fileIndices, archivePath, destinationDirectory, format] {
-
+			SevenZipCallbackHandler PrivateCallback;
+			PrivateCallback.progressDelegate = (UObject*)progressDelegate;
 			//UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
 			SevenZipExtractor extractor(SZLib, *archivePath);
 
@@ -283,10 +281,9 @@ namespace{
 	//Background Thread convenience functions
 	void UnzipOnBGThreadWithFormat(const FString& archivePath, const FString& destinationDirectory, const UObject* progressDelegate, ZipUtilityCompressionFormat format)
 	{
-		PrivateCallback.progressDelegate = (UObject*)progressDelegate;
-
 		RunLongLambdaOnAnyThread([progressDelegate, archivePath, destinationDirectory, format] {
-
+			SevenZipCallbackHandler PrivateCallback;
+			PrivateCallback.progressDelegate = (UObject*)progressDelegate;
 			//UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
 			SevenZipExtractor extractor(SZLib, *archivePath);
 
@@ -308,11 +305,10 @@ namespace{
 
 	void ListOnBGThread(const FString& path, const FString& directory, const UObject* listDelegate, ZipUtilityCompressionFormat format)
 	{
-		PrivateCallback.progressDelegate = (UObject*)listDelegate;
-
 		//RunLongLambdaOnAnyThread - this shouldn't take long, but if it lags, swap the lambda methods
 		RunLambdaOnAnyThread([listDelegate, path, format, directory] {
-
+			SevenZipCallbackHandler PrivateCallback;
+			PrivateCallback.progressDelegate = (UObject*)listDelegate;
 			SevenZipLister lister(SZLib, *path);
 
 			if (format == COMPRESSION_FORMAT_UNKNOWN) {
@@ -327,15 +323,14 @@ namespace{
 			}
 
 			lister.ListArchive(&PrivateCallback); //&PrivateCallback
-
 		});
 	}
 
 	void ZipOnBGThread(const FString& path, const FString& fileName, const FString& directory, const UObject* progressDelegate, ZipUtilityCompressionFormat format)
 	{
-		PrivateCallback.progressDelegate = (UObject*)progressDelegate;
-
 		RunLongLambdaOnAnyThread([progressDelegate, fileName, path, format, directory] {
+			SevenZipCallbackHandler PrivateCallback;
+			PrivateCallback.progressDelegate = (UObject*)progressDelegate;
 			//Set the zip format
 			ZipUtilityCompressionFormat ueFormat = format;
 
@@ -374,9 +369,6 @@ namespace{
 
 }//End private namespace
 
-
-UZipFileFunctionInternalCallback* UZipFileFunctionLibrary::InternalCallback = NULL;
-
 UZipFileFunctionLibrary::UZipFileFunctionLibrary(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
@@ -386,20 +378,12 @@ UZipFileFunctionLibrary::UZipFileFunctionLibrary(const class FObjectInitializer&
 UZipFileFunctionLibrary::~UZipFileFunctionLibrary()
 {
 	SZLib.Free();
-	if (InternalCallback && InternalCallback->IsValidLowLevel())
-	{
-		InternalCallback->ConditionalBeginDestroy();
-	}
-
 }
 
 bool UZipFileFunctionLibrary::UnzipFileNamed(const FString& archivePath, const FString& Name, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format /*= COMPRESSION_FORMAT_UNKNOWN*/)
 {	
-	if (!InternalCallback || !InternalCallback->IsValidLowLevel())
-	{
-		InternalCallback = NewObject<UZipFileFunctionInternalCallback>();
-		InternalCallback->SetFlags(RF_MarkAsRootSet);
-	}
+	UZipFileFunctionInternalCallback* InternalCallback = NewObject<UZipFileFunctionInternalCallback>();
+	InternalCallback->SetFlags(RF_MarkAsRootSet);
 	InternalCallback->SetCallback(Name, ZipUtilityInterfaceDelegate, format);
 
 	ListFilesInArchive(archivePath, InternalCallback, format);
@@ -409,12 +393,8 @@ bool UZipFileFunctionLibrary::UnzipFileNamed(const FString& archivePath, const F
 
 bool UZipFileFunctionLibrary::UnzipFileNamedTo(const FString& archivePath, const FString& Name, const FString& destinationPath, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format /*= COMPRESSION_FORMAT_UNKNOWN*/)
 {
-
-	if (!InternalCallback || !InternalCallback->IsValidLowLevel())
-	{
-		InternalCallback = NewObject<UZipFileFunctionInternalCallback>();
-		InternalCallback->SetFlags(RF_MarkAsRootSet);
-	}
+	UZipFileFunctionInternalCallback* InternalCallback = NewObject<UZipFileFunctionInternalCallback>();
+	InternalCallback->SetFlags(RF_MarkAsRootSet);
 	InternalCallback->SetCallback(Name, destinationPath, ZipUtilityInterfaceDelegate, format);
 
 	ListFilesInArchive(archivePath, InternalCallback, format);
