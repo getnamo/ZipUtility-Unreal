@@ -23,7 +23,7 @@ public:
 	* @param FilePath of the file that was found
 	*/
 	UFUNCTION(BlueprintNativeEvent, Category = FolderWatchEvent)
-	void OnFileFound(const FString& FileName, int32 ByteCount, const FString& FilePath);
+	void OnListFileFound(const FString& FileName, int32 ByteCount, const FString& FilePath);
 
 	/**
 	* Called when a directory has been found inside the folder of choice
@@ -31,7 +31,7 @@ public:
 	* @param FilePath of the file that was found
 	*/
 	UFUNCTION(BlueprintNativeEvent, Category = FolderWatchEvent)
-	void OnDirectoryFound(const FString& DirectoryName, const FString& FilePath);
+	void OnListDirectoryFound(const FString& DirectoryName, const FString& FilePath);
 
 	/**
 	* Called when the listing operation has completed.
@@ -39,5 +39,5 @@ public:
 	* @param Files array of files found
 	*/
 	UFUNCTION(BlueprintNativeEvent, Category = FolderWatchEvent)
-	void OnDone(const FString& DirectoryPath, const TArray<FString>& Files);
+	void OnListDone(const FString& DirectoryPath, const TArray<FString>& Files, const TArray<FString>& Folders);
 };
