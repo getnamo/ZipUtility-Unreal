@@ -146,6 +146,11 @@ void UWindowsFileUtilityFunctionLibrary::StopWatchingFolder(const FString& FullP
 	}
 }
 
+void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& FullPath, UObject* Delegate)
+{
+
+}
+
 void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& FullPath, const FWatcher* WatcherPtr)
 {
 	//mostly from https://msdn.microsoft.com/en-us/library/windows/desktop/aa365261(v=vs.85).aspx
