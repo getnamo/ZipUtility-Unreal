@@ -1,4 +1,6 @@
 #include "WindowsFileUtilityPrivatePCH.h"
+#include "FolderWatchInterface.h"
+#include "FileListInterface.h"
 #include "WindowsFileUtilityFunctionLibrary.h"
 
 //static TMAP definition
@@ -148,7 +150,69 @@ void UWindowsFileUtilityFunctionLibrary::StopWatchingFolder(const FString& FullP
 
 void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& FullPath, UObject* Delegate)
 {
+	//Longer than max path? throw error
+	if (FullPath.Len() > MAX_PATH)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder Error, path too long, listing aborted."));
+		return;
+	}
 
+	WIN32_FIND_DATA ffd;
+	LARGE_INTEGER filesize;
+	//TCHAR szDir[MAX_PATH];
+	//size_t length_of_arg;
+	HANDLE hFind = INVALID_HANDLE_VALUE;
+	DWORD dwError = 0;
+
+	//Append \\* to path
+	FString SearchPath = FullPath + TEXT("\\*");
+
+	//szDir = *SearchPath;
+
+	hFind = FindFirstFile(*SearchPath, &ffd);
+
+	if (INVALID_HANDLE_VALUE == hFind)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder Error, invalid handle, listing aborted."));
+		return;
+	}
+
+	// List all the files in the directory with some info about them.
+	TArray<FString> FileNames;
+
+	//todo: add listing callback.
+	do
+	{
+		FString Name = FString(ffd.cFileName);
+		FileNames.Add(Name);
+		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			//_tprintf(TEXT("  %s   <DIR>\n"), ffd.cFileName);
+			
+			((IFileListInterface*)Delegate)->Execute_OnDirectoryFound((UObject*)Delegate, Name, FullPath);
+		}
+		else
+		{
+			filesize.LowPart = ffd.nFileSizeLow;
+			filesize.HighPart = ffd.nFileSizeHigh;
+
+			((IFileListInterface*)Delegate)->Execute_OnFileFound((UObject*)Delegate, Name, filesize.QuadPart, FullPath);
+			//_tprintf(TEXT("  %s   %ld bytes\n"), ffd.cFileName, filesize.QuadPart);
+		}
+		
+	} while (FindNextFile(hFind, &ffd) != 0);
+
+	dwError = GetLastError();
+	if (dwError != ERROR_NO_MORE_FILES)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder Error while listing."));
+		return;
+	}
+
+	FindClose(hFind);
+
+	//Done callback with full list of names found
+	((IFileListInterface*)Delegate)->Execute_OnDone((UObject*)Delegate, FullPath, FileNames);
 }
 
 void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& FullPath, const FWatcher* WatcherPtr)
