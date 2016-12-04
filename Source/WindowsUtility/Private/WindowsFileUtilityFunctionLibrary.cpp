@@ -182,17 +182,25 @@ void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& Ful
 		do
 		{
 			FString Name = FString(ffd.cFileName);
+			FString ItemPath = FullPath + TEXT("\\") + Name;
+
+			//UE_LOG(LogTemp, Log, TEXT("Name: <%s>"), *Name);
 			
-			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY 
-				&& !Name.Equals(FString(TEXT(".")))
-				&& !Name.Equals(FString(TEXT(".."))))
+			if (Name.Equals(FString(TEXT("."))) ||
+				Name.Equals(FString(TEXT(".."))) )
+			{
+				//ignore these first
+			}
+			//Folder
+			else if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
 				FolderNames.Add(Name);
-				FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, FullPath, Name]
+				FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, ItemPath, Name]
 				{
-					((IFileListInterface*)Delegate)->Execute_OnListDirectoryFound((UObject*)Delegate, Name, FullPath + Name);
+					((IFileListInterface*)Delegate)->Execute_OnListDirectoryFound((UObject*)Delegate, Name, ItemPath);
 				});
 			}
+			//File
 			else
 			{
 				FileNames.Add(Name);
@@ -201,9 +209,9 @@ void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& Ful
 				filesize.HighPart = ffd.nFileSizeHigh;
 				int32 TruncatedFileSize = filesize.QuadPart;
 
-				FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, FullPath, Name, TruncatedFileSize]
+				FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, ItemPath, Name, TruncatedFileSize]
 				{
-					((IFileListInterface*)Delegate)->Execute_OnListFileFound((UObject*)Delegate, Name, TruncatedFileSize, FullPath + Name);
+					((IFileListInterface*)Delegate)->Execute_OnListFileFound((UObject*)Delegate, Name, TruncatedFileSize, ItemPath);
 				});
 			}
 
@@ -219,7 +227,7 @@ void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& Ful
 		FindClose(hFind);
 
 		//Done callback with full list of names found
-		FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, FullPath, &FileNames, &FolderNames]
+		FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, FullPath, FileNames, FolderNames]
 		{
 			((IFileListInterface*)Delegate)->Execute_OnListDone((UObject*)Delegate, FullPath, FileNames, FolderNames);
 		});
