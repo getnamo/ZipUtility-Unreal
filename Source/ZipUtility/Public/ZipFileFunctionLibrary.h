@@ -27,9 +27,6 @@ class ZIPUTILITY_API UZipFileFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_UCLASS_BODY()
 
-private:
-	static UZipFileFunctionInternalCallback* InternalCallback;
-
 public:
 	~UZipFileFunctionLibrary();
 	
