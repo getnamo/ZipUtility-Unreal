@@ -3,6 +3,7 @@
 #include "ZipFileFunctionInternalCallback.h"
 #include "ListCallback.h"
 #include "ProgressCallback.h"
+#include "IPluginManager.h"
 #include "7zpp.h"
 #include "LambdaRunnable.h"
 
@@ -137,9 +138,10 @@ namespace{
 	SevenZipLibrary SZLib;
 
 	//Utility functions
-	FString UtilityGameFolder()
+	FString PluginRootFolder()
 	{
-		return FPaths::ConvertRelativePathToFull(FPaths::GameDir());
+		return IPluginManager::Get().FindPlugin("ZipUtility")->GetBaseDir();
+		//return FPaths::ConvertRelativePathToFull(FPaths::GameDir());
 	}
 
 	FString DLLPath()
@@ -155,7 +157,7 @@ namespace{
 		FString dllString = FString("7z.dll");		//Using 7z.dll: GNU LGPL + unRAR restriction
 		//FString dllString = FString("7za.dll");	//Using 7za.dll: GNU LGPL license, crucially doesn't support .zip out of the box
 
-		return FPaths::Combine(*UtilityGameFolder(), TEXT("Plugins/ZipUtility/ThirdParty/7zpp/dll"), *PlatformString, *dllString);
+		return FPaths::Combine(*PluginRootFolder(), TEXT("ThirdParty/7zpp/dll"), *PlatformString, *dllString);
 	}
 
 	FString ReversePathSlashes(FString forwardPath)
@@ -347,7 +349,7 @@ namespace{
 			FString outputFileName = FString::Printf(TEXT("%s/%s%s"), *directory, *fileName, *defaultExtensionFromUEFormat(ueFormat));
 			//UE_LOG(LogClass, Log, TEXT("\noutputfile is: <%s>\n path is: <%s>"), *outputFileName, *path);
 			
-			SevenZipCompressor compressor(SZLib, *outputFileName);
+			SevenZipCompressor compressor(SZLib, *ReversePathSlashes(outputFileName));
 			compressor.SetCompressionFormat(libZipFormatFromUEFormat(ueFormat));
 
 			if (PathIsDirectory(*path))
