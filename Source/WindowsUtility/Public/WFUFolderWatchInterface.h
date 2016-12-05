@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include "FolderWatchInterface.generated.h"
+#include "WFUFolderWatchInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
-class UFolderWatchInterface : public UInterface
+class UWFUFolderWatchInterface : public UInterface
 {
 	GENERATED_UINTERFACE_BODY()
 };
 
-class WINDOWSFILEUTILITY_API IFolderWatchInterface
+class WINDOWSFILEUTILITY_API IWFUFolderWatchInterface
 {
 	GENERATED_IINTERFACE_BODY()
 

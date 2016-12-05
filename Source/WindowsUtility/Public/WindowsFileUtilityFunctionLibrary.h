@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LambdaRunnable.h"
+#include "WFULambdaRunnable.h"
 #include "WindowsFileUtilityFunctionLibrary.generated.h"
 
 //Struct to Track which delegate is watching files
@@ -10,7 +10,7 @@ struct FWatcher
 	
 	FString Path;
 
-	FLambdaRunnable* Runnable = nullptr;
+	WFULambdaRunnable* Runnable = nullptr;
 
 	FThreadSafeBool ShouldRun = true;
 	
@@ -57,6 +57,9 @@ class WINDOWSFILEUTILITY_API UWindowsFileUtilityFunctionLibrary : public UBluepr
 	/** List the contents, expects UFileListInterface*/
 	UFUNCTION(BlueprintCallable, Category = WindowsFileUtility)
 	static void ListContentsOfFolder(const FString& FullPath, UObject* ListDelegate);
+
+	//Convenience C++ callback
+	static void ListContentsOfFolderToCallback(const FString& FullPath, TFunction<void(const TArray<FString>&, const TArray<FString>&)> OnListCompleteCallback);
 
 private:
 	static void WatchFolderOnBgThread(const FString& FullPath, const FWatcher* Watcher);

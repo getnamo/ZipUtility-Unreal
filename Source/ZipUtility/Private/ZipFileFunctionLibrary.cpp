@@ -5,7 +5,7 @@
 #include "ProgressCallback.h"
 #include "IPluginManager.h"
 #include "7zpp.h"
-#include "LambdaRunnable.h"
+#include "WFULambdaRunnable.h"
 #include "ZULambdaDelegate.h"
 
 
@@ -28,7 +28,7 @@ namespace{
 	//Uses proper threading, for any task that may run longer than about 2 seconds.
 	void RunLongLambdaOnAnyThread(TFunction< void()> InFunction)
 	{
-		FLambdaRunnable::RunLambdaOnBackGroundThread(InFunction);
+		WFULambdaRunnable::RunLambdaOnBackGroundThread(InFunction);
 	}
 
 	class SevenZipCallbackHandler : public ListCallback, public ProgressCallback

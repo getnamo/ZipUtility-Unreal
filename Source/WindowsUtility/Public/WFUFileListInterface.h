@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include "FileListInterface.generated.h"
+#include "WFUFileListInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
-class UFileListInterface : public UInterface
+class UWFUFileListInterface : public UInterface
 {
 	GENERATED_UINTERFACE_BODY()
 };
 
-class WINDOWSFILEUTILITY_API IFileListInterface
+class WINDOWSFILEUTILITY_API IWFUFileListInterface
 {
 	GENERATED_IINTERFACE_BODY()
 
