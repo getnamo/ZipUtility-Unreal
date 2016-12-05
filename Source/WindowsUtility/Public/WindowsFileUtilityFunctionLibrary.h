@@ -54,6 +54,10 @@ class WINDOWSFILEUTILITY_API UWindowsFileUtilityFunctionLibrary : public UBluepr
 	UFUNCTION(BlueprintCallable, Category = WindowsFileUtility)
 	static void StopWatchingFolder(const FString& FullPath, UObject* WatcherDelegate);
 
+	/** List the contents, expects UFileListInterface*/
+	UFUNCTION(BlueprintCallable, Category = WindowsFileUtility)
+	static void ListContentsOfFolder(const FString& FullPath, UObject* ListDelegate);
+
 private:
 	static void WatchFolderOnBgThread(const FString& FullPath, const FWatcher* Watcher);
 	static TMap<FString, TArray<FWatcher>> Watchers;

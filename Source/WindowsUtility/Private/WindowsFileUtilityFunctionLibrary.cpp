@@ -1,4 +1,6 @@
 #include "WindowsFileUtilityPrivatePCH.h"
+#include "FolderWatchInterface.h"
+#include "FileListInterface.h"
 #include "WindowsFileUtilityFunctionLibrary.h"
 
 //static TMAP definition
@@ -144,6 +146,92 @@ void UWindowsFileUtilityFunctionLibrary::StopWatchingFolder(const FString& FullP
 			break;
 		}
 	}
+}
+
+void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& FullPath, UObject* Delegate)
+{
+	//Longer than max path? throw error
+	if (FullPath.Len() > MAX_PATH)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder Error, path too long, listing aborted."));
+		return;
+	}
+
+	FLambdaRunnable* Runnable = FLambdaRunnable::RunLambdaOnBackGroundThread([&FullPath, Delegate]()
+	{
+		WIN32_FIND_DATA ffd;
+		LARGE_INTEGER filesize;
+		HANDLE hFind = INVALID_HANDLE_VALUE;
+		DWORD dwError = 0;
+
+		FString SearchPath = FullPath + TEXT("\\*");
+
+		hFind = FindFirstFile(*SearchPath, &ffd);
+
+		if (INVALID_HANDLE_VALUE == hFind)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder Error, invalid handle, listing aborted."));
+			return;
+		}
+
+		//Arrays to hold full information on Done
+		TArray<FString> FileNames;
+		TArray<FString> FolderNames;
+
+		//List loop, callback on game thread
+		do
+		{
+			FString Name = FString(ffd.cFileName);
+			FString ItemPath = FullPath + TEXT("\\") + Name;
+
+			//UE_LOG(LogTemp, Log, TEXT("Name: <%s>"), *Name);
+			
+			if (Name.Equals(FString(TEXT("."))) ||
+				Name.Equals(FString(TEXT(".."))) )
+			{
+				//ignore these first
+			}
+			//Folder
+			else if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			{
+				FolderNames.Add(Name);
+				FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, ItemPath, Name]
+				{
+					((IFileListInterface*)Delegate)->Execute_OnListDirectoryFound((UObject*)Delegate, Name, ItemPath);
+				});
+			}
+			//File
+			else
+			{
+				FileNames.Add(Name);
+
+				filesize.LowPart = ffd.nFileSizeLow;
+				filesize.HighPart = ffd.nFileSizeHigh;
+				int32 TruncatedFileSize = filesize.QuadPart;
+
+				FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, ItemPath, Name, TruncatedFileSize]
+				{
+					((IFileListInterface*)Delegate)->Execute_OnListFileFound((UObject*)Delegate, Name, TruncatedFileSize, ItemPath);
+				});
+			}
+
+		} while (FindNextFile(hFind, &ffd) != 0);
+
+		dwError = GetLastError();
+		if (dwError != ERROR_NO_MORE_FILES)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder Error while listing."));
+			return;
+		}
+
+		FindClose(hFind);
+
+		//Done callback with full list of names found
+		FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, FullPath, FileNames, FolderNames]
+		{
+			((IFileListInterface*)Delegate)->Execute_OnListDone((UObject*)Delegate, FullPath, FileNames, FolderNames);
+		});
+	});
 }
 
 void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& FullPath, const FWatcher* WatcherPtr)
