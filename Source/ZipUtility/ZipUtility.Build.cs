@@ -76,6 +76,7 @@ public class ZipUtility : ModuleRules
             string PlatformSubPath = (Target.Platform == UnrealTargetPlatform.Win64) ? "Win64" : "Win32";
             string LibrariesPath = Path.Combine(SevenZppPath, "Lib");
 
+            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, PlatformSubPath, "atls.lib"));
             PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, PlatformSubPath, "7zpp_u.lib"));
         }
 

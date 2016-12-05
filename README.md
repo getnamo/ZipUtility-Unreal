@@ -88,6 +88,12 @@ To rename it, simply change the destination name
 ![Make Directory](http://i.imgur.com/8ocCOPF.png)
 
 
+###List Contents of Folder
+
+Expects self to be a FileListInterface
+
+![List Contents](http://i.imgur.com/PPhyxFE.png)
+
 ##License
 
 MIT for ZipUtility and 7z-cpp
