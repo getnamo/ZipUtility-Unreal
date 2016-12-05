@@ -6,6 +6,7 @@
 #include "IPluginManager.h"
 #include "7zpp.h"
 #include "LambdaRunnable.h"
+#include "ZULambdaDelegate.h"
 
 
 using namespace SevenZip;
@@ -437,6 +438,16 @@ bool UZipFileFunctionLibrary::Unzip(const FString& archivePath, UObject* progres
 	return UnzipTo(archivePath, directory, progressDelegate, COMPRESSION_FORMAT_UNKNOWN);
 }
 
+bool UZipFileFunctionLibrary::UnzipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback, TEnumAsByte<ZipUtilityCompressionFormat> format)
+{
+	UZULambdaDelegate* LambdaDelegate = NewObject<UZULambdaDelegate>();
+	LambdaDelegate->SetOnDoneCallback(OnDoneCallback);
+	LambdaDelegate->SetOnProgessCallback(OnProgressCallback);
+
+	return Unzip(ArchivePath, LambdaDelegate, format);
+}
+
+
 bool UZipFileFunctionLibrary::UnzipTo(const FString& archivePath, const FString& destinationPath, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
 {
 	UnzipOnBGThreadWithFormat(archivePath, destinationPath, ZipUtilityInterfaceDelegate, COMPRESSION_FORMAT_UNKNOWN);
@@ -454,6 +465,15 @@ bool UZipFileFunctionLibrary::Zip(const FString& path, UObject* progressDelegate
 
 	ZipOnBGThread(path, fileName, directory, progressDelegate, format);
 	return true;
+}
+
+bool UZipFileFunctionLibrary::ZipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback /*= nullptr*/, TEnumAsByte<ZipUtilityCompressionFormat> format /*= COMPRESSION_FORMAT_UNKNOWN*/)
+{
+	UZULambdaDelegate* LambdaDelegate = NewObject<UZULambdaDelegate>();
+	LambdaDelegate->SetOnDoneCallback(OnDoneCallback);
+	LambdaDelegate->SetOnProgessCallback(OnProgressCallback);
+
+	return Zip(ArchivePath, LambdaDelegate, format);
 }
 
 bool UZipFileFunctionLibrary::ListFilesInArchive(const FString& path, UObject* listDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
