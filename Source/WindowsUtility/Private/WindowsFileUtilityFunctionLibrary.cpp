@@ -236,7 +236,10 @@ void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& Ful
 
 void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolderToCallback(const FString& FullPath, TFunction<void(const TArray<FString>&, const TArray<FString>&)> OnListCompleteCallback)
 {
+	UWFUFileListLambdaDelegate* LambdaDelegate = NewObject<UWFUFileListLambdaDelegate>();
+	LambdaDelegate->SetOnDoneCallback(OnListCompleteCallback);
 
+	ListContentsOfFolder(FullPath, LambdaDelegate);
 }
 
 void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& FullPath, const FWatcher* WatcherPtr)

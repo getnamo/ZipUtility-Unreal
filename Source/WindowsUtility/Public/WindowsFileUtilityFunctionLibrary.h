@@ -61,6 +61,9 @@ class WINDOWSFILEUTILITY_API UWindowsFileUtilityFunctionLibrary : public UBluepr
 	//Convenience C++ callback
 	static void ListContentsOfFolderToCallback(const FString& FullPath, TFunction<void(const TArray<FString>&, const TArray<FString>&)> OnListCompleteCallback);
 
+	//Todo: add watch folder with threadsafe boolean passthrough
+	//static void ListContentsOfFolderToCallback(const FString& FullPath, TFunction<void(const TArray<FString>&, const TArray<FString>&)> OnListCompleteCallback);
+
 private:
 	static void WatchFolderOnBgThread(const FString& FullPath, const FWatcher* Watcher);
 	static TMap<FString, TArray<FWatcher>> Watchers;
