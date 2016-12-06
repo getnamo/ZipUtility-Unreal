@@ -19,6 +19,15 @@ enum ZipUtilityCompressionFormat
 	COMPRESSION_FORMAT_LZMA86
 };
 
+
+UENUM(BlueprintType)
+enum ZipUtilityCompressionLevel
+{
+	COMPRESSION_LEVEL_NONE,
+	COMPRESSION_LEVEL_FAST,
+	COMPRESSION_LEVEL_NORMAL
+};
+
 class SevenZipCallbackHandler;
 class UZipFileFunctionInternalCallback;
 
@@ -50,13 +59,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
 	static bool Unzip(const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_UNKNOWN);
 
+	/* Lambda C++ simple variant*/
+	static bool UnzipWithLambda(	const FString& ArchivePath,
+									TFunction<void()> OnDoneCallback,
+									TFunction<void(float)> OnProgressCallback = nullptr,
+									TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_UNKNOWN);
+
 	/* Unzips archive at destination path. Automatically determines compression if unknown. Calls ZipUtilityInterface progress events. */
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
 	static bool UnzipTo(const FString& ArchivePath, const FString& DestinationPath, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_UNKNOWN);
 
 	/* Compresses the file or folder given at path and places the file in the same root folder. Calls ZipUtilityInterface progress events. Not all formats are supported for compression.*/
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
-	static bool Zip(const FString& FileOrFolderPath, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_SEVEN_ZIP);
+	static bool Zip(	const FString& FileOrFolderPath, 
+						UObject* ZipUtilityInterfaceDelegate, 
+						TEnumAsByte<ZipUtilityCompressionFormat> Format = COMPRESSION_FORMAT_SEVEN_ZIP, 
+						TEnumAsByte<ZipUtilityCompressionLevel> Level = COMPRESSION_LEVEL_NORMAL);
+
+	/* Lambda C++ simple variant*/
+	static bool ZipWithLambda(	const FString& ArchivePath,
+								TFunction<void()> OnDoneCallback,
+								TFunction<void(float)> OnProgressCallback = nullptr,
+								TEnumAsByte<ZipUtilityCompressionFormat> Format = COMPRESSION_FORMAT_UNKNOWN,
+								TEnumAsByte<ZipUtilityCompressionLevel> Level = COMPRESSION_LEVEL_NORMAL);
+
 
 	/*Queries Archive content list, calls ZipUtilityInterface list events (OnFileFound)*/
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)

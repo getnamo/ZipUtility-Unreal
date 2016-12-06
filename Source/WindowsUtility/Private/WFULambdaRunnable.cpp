@@ -1,11 +1,11 @@
 #pragma once
 
 #include "WindowsFileUtilityPrivatePCH.h"
-#include "LambdaRunnable.h"
+#include "WFULambdaRunnable.h"
 
-uint64 FLambdaRunnable::ThreadNumber = 0;
+uint64 WFULambdaRunnable::ThreadNumber = 0;
 
-FLambdaRunnable::FLambdaRunnable(TFunction< void()> InFunction)
+WFULambdaRunnable::WFULambdaRunnable(TFunction< void()> InFunction)
 {
 	FunctionPointer = InFunction;
 	Finished = false;
@@ -19,7 +19,7 @@ FLambdaRunnable::FLambdaRunnable(TFunction< void()> InFunction)
 	//Runnables.Add(this);
 }
 
-FLambdaRunnable::~FLambdaRunnable()
+WFULambdaRunnable::~WFULambdaRunnable()
 {
 	if (Thread == NULL)
 	{
@@ -31,14 +31,14 @@ FLambdaRunnable::~FLambdaRunnable()
 }
 
 //Init
-bool FLambdaRunnable::Init()
+bool WFULambdaRunnable::Init()
 {
 	//UE_LOG(LogClass, Log, TEXT("FLambdaRunnable %d Init"), Number);
 	return true;
 }
 
 //Run
-uint32 FLambdaRunnable::Run()
+uint32 WFULambdaRunnable::Run()
 {
 	if (FunctionPointer)
 		FunctionPointer();
@@ -48,12 +48,12 @@ uint32 FLambdaRunnable::Run()
 }
 
 //stop
-void FLambdaRunnable::Stop()
+void WFULambdaRunnable::Stop()
 {
 	Finished = true;
 }
 
-void FLambdaRunnable::Exit()
+void WFULambdaRunnable::Exit()
 {
 	Finished = true;
 	//UE_LOG(LogClass, Log, TEXT("FLambdaRunnable %d Exit"), Number);
@@ -62,18 +62,18 @@ void FLambdaRunnable::Exit()
 	delete this;
 }
 
-void FLambdaRunnable::EnsureCompletion()
+void WFULambdaRunnable::EnsureCompletion()
 {
 	Stop();
 	Thread->WaitForCompletion();
 }
 
-FLambdaRunnable* FLambdaRunnable::RunLambdaOnBackGroundThread(TFunction< void()> InFunction)
+WFULambdaRunnable* WFULambdaRunnable::RunLambdaOnBackGroundThread(TFunction< void()> InFunction)
 {
-	FLambdaRunnable* Runnable;
+	WFULambdaRunnable* Runnable;
 	if (FPlatformProcess::SupportsMultithreading())
 	{
-		Runnable = new FLambdaRunnable(InFunction);
+		Runnable = new WFULambdaRunnable(InFunction);
 		//UE_LOG(LogClass, Log, TEXT("FLambdaRunnable RunLambdaBackGroundThread"));
 		return Runnable;
 	}
@@ -83,12 +83,12 @@ FLambdaRunnable* FLambdaRunnable::RunLambdaOnBackGroundThread(TFunction< void()>
 	}
 }
 
-FGraphEventRef FLambdaRunnable::RunShortLambdaOnGameThread(TFunction< void()> InFunction)
+FGraphEventRef WFULambdaRunnable::RunShortLambdaOnGameThread(TFunction< void()> InFunction)
 {
 	return FFunctionGraphTask::CreateAndDispatchWhenReady(InFunction, TStatId(), nullptr, ENamedThreads::GameThread);
 }
 
-void FLambdaRunnable::ShutdownThreads()
+void WFULambdaRunnable::ShutdownThreads()
 {
 	/*for (auto Runnable : Runnables)
 	{

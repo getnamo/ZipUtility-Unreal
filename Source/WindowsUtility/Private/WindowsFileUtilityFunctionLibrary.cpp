@@ -1,6 +1,6 @@
 #include "WindowsFileUtilityPrivatePCH.h"
-#include "FolderWatchInterface.h"
-#include "FileListInterface.h"
+#include "WFUFolderWatchInterface.h"
+#include "WFUFileListInterface.h"
 #include "WindowsFileUtilityFunctionLibrary.h"
 
 //static TMAP definition
@@ -111,7 +111,7 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolder(const FString& FullPath, UO
 	const FWatcher* WatcherPtr = &FreshWatcher;
 
 	//fork this off to another process
-	FLambdaRunnable* Runnable = FLambdaRunnable::RunLambdaOnBackGroundThread([FullPath, WatcherDelegate, WatcherPtr]()
+	WFULambdaRunnable* Runnable = WFULambdaRunnable::RunLambdaOnBackGroundThread([FullPath, WatcherDelegate, WatcherPtr]()
 	{
 		 UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(FullPath, WatcherPtr);
 	});
@@ -157,7 +157,7 @@ void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& Ful
 		return;
 	}
 
-	FLambdaRunnable* Runnable = FLambdaRunnable::RunLambdaOnBackGroundThread([&FullPath, Delegate]()
+	WFULambdaRunnable* Runnable = WFULambdaRunnable::RunLambdaOnBackGroundThread([&FullPath, Delegate]()
 	{
 		WIN32_FIND_DATA ffd;
 		LARGE_INTEGER filesize;
@@ -195,9 +195,9 @@ void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& Ful
 			else if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
 				FolderNames.Add(Name);
-				FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, ItemPath, Name]
+				WFULambdaRunnable::RunShortLambdaOnGameThread([Delegate, ItemPath, Name]
 				{
-					((IFileListInterface*)Delegate)->Execute_OnListDirectoryFound((UObject*)Delegate, Name, ItemPath);
+					((IWFUFileListInterface*)Delegate)->Execute_OnListDirectoryFound((UObject*)Delegate, Name, ItemPath);
 				});
 			}
 			//File
@@ -209,9 +209,9 @@ void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& Ful
 				filesize.HighPart = ffd.nFileSizeHigh;
 				int32 TruncatedFileSize = filesize.QuadPart;
 
-				FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, ItemPath, Name, TruncatedFileSize]
+				WFULambdaRunnable::RunShortLambdaOnGameThread([Delegate, ItemPath, Name, TruncatedFileSize]
 				{
-					((IFileListInterface*)Delegate)->Execute_OnListFileFound((UObject*)Delegate, Name, TruncatedFileSize, ItemPath);
+					((IWFUFileListInterface*)Delegate)->Execute_OnListFileFound((UObject*)Delegate, Name, TruncatedFileSize, ItemPath);
 				});
 			}
 
@@ -227,11 +227,19 @@ void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& Ful
 		FindClose(hFind);
 
 		//Done callback with full list of names found
-		FLambdaRunnable::RunShortLambdaOnGameThread([Delegate, FullPath, FileNames, FolderNames]
+		WFULambdaRunnable::RunShortLambdaOnGameThread([Delegate, FullPath, FileNames, FolderNames]
 		{
-			((IFileListInterface*)Delegate)->Execute_OnListDone((UObject*)Delegate, FullPath, FileNames, FolderNames);
+			((IWFUFileListInterface*)Delegate)->Execute_OnListDone((UObject*)Delegate, FullPath, FileNames, FolderNames);
 		});
 	});
+}
+
+void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolderToCallback(const FString& FullPath, TFunction<void(const TArray<FString>&, const TArray<FString>&)> OnListCompleteCallback)
+{
+	UWFUFileListLambdaDelegate* LambdaDelegate = NewObject<UWFUFileListLambdaDelegate>();
+	LambdaDelegate->SetOnDoneCallback(OnListCompleteCallback);
+
+	ListContentsOfFolder(FullPath, LambdaDelegate);
 }
 
 void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& FullPath, const FWatcher* WatcherPtr)
@@ -332,12 +340,12 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 
 			
 
-			FLambdaRunnable::RunShortLambdaOnGameThread([FullPath, FileString, WatcherDelegate]()
+			WFULambdaRunnable::RunShortLambdaOnGameThread([FullPath, FileString, WatcherDelegate]()
 			{
-				if (WatcherDelegate->GetClass()->ImplementsInterface(UFolderWatchInterface::StaticClass()))
+				if (WatcherDelegate->GetClass()->ImplementsInterface(UWFUFolderWatchInterface::StaticClass()))
 				{
 					FString FilePath = FString::Printf(TEXT("%s\\%s"), *FullPath, *FileString);
-					((IFolderWatchInterface*)WatcherDelegate)->Execute_OnFileChanged((UObject*)WatcherDelegate, FileString, FilePath);
+					((IWFUFolderWatchInterface*)WatcherDelegate)->Execute_OnFileChanged((UObject*)WatcherDelegate, FileString, FilePath);
 				}
 			});
 			if (FindNextChangeNotification(dwChangeHandles[0]) == FALSE)
@@ -355,12 +363,12 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 			ReadDirectoryChangesW(dwChangeHandles[1], (LPVOID)&strFileNotifyInfo, sizeof(strFileNotifyInfo), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE, &dwBytesReturned, NULL, NULL);
 			DirectoryString = FString(strFileNotifyInfo[0].FileNameLength, strFileNotifyInfo[0].FileName);
 
-			FLambdaRunnable::RunShortLambdaOnGameThread([FullPath, WatcherDelegate, DirectoryString]()
+			WFULambdaRunnable::RunShortLambdaOnGameThread([FullPath, WatcherDelegate, DirectoryString]()
 			{
-				if (WatcherDelegate->GetClass()->ImplementsInterface(UFolderWatchInterface::StaticClass()))
+				if (WatcherDelegate->GetClass()->ImplementsInterface(UWFUFolderWatchInterface::StaticClass()))
 				{
 					FString ChangedDirectoryPath = FString::Printf(TEXT("%s\\%s"), *FullPath, *DirectoryString);
-					((IFolderWatchInterface*)WatcherDelegate)->Execute_OnDirectoryChanged((UObject*)WatcherDelegate, DirectoryString, ChangedDirectoryPath);
+					((IWFUFolderWatchInterface*)WatcherDelegate)->Execute_OnDirectoryChanged((UObject*)WatcherDelegate, DirectoryString, ChangedDirectoryPath);
 				}
 			});
 			if (FindNextChangeNotification(dwChangeHandles[1]) == FALSE)

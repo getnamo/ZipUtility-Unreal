@@ -4,7 +4,7 @@
 Long duration lambda wrapper, which are generally not supported by the taskgraph system. New thread per lambda and they will auto-delete upon
 completion.
 */
-class WINDOWSFILEUTILITY_API FLambdaRunnable : public FRunnable
+class WINDOWSFILEUTILITY_API WFULambdaRunnable : public FRunnable
 {
 private:
 	/** Thread to run the worker FRunnable on */
@@ -23,8 +23,8 @@ public:
 	FThreadSafeBool Finished;
 
 	//Constructor / Destructor
-	FLambdaRunnable(TFunction< void()> InFunction);
-	virtual ~FLambdaRunnable();
+	WFULambdaRunnable(TFunction< void()> InFunction);
+	virtual ~WFULambdaRunnable();
 
 	// Begin FRunnable interface.
 	virtual bool Init();
@@ -39,7 +39,7 @@ public:
 	/*
 	Runs the passed lambda on the background thread, new thread per call
 	*/
-	static FLambdaRunnable* RunLambdaOnBackGroundThread(TFunction< void()> InFunction);
+	static WFULambdaRunnable* RunLambdaOnBackGroundThread(TFunction< void()> InFunction);
 
 	/*
 	Runs a short lambda on the game thread via task graph system
