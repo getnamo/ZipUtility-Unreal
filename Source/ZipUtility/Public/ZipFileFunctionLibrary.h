@@ -19,6 +19,15 @@ enum ZipUtilityCompressionFormat
 	COMPRESSION_FORMAT_LZMA86
 };
 
+
+UENUM(BlueprintType)
+enum ZipUtilityCompressionLevel
+{
+	COMPRESSION_LEVEL_NONE,
+	COMPRESSION_LEVEL_FAST,
+	COMPRESSION_LEVEL_NORMAL
+};
+
 class SevenZipCallbackHandler;
 class UZipFileFunctionInternalCallback;
 
@@ -62,13 +71,17 @@ public:
 
 	/* Compresses the file or folder given at path and places the file in the same root folder. Calls ZipUtilityInterface progress events. Not all formats are supported for compression.*/
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
-	static bool Zip(const FString& FileOrFolderPath, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_SEVEN_ZIP);
+	static bool Zip(	const FString& FileOrFolderPath, 
+						UObject* ZipUtilityInterfaceDelegate, 
+						TEnumAsByte<ZipUtilityCompressionFormat> Format = COMPRESSION_FORMAT_SEVEN_ZIP, 
+						TEnumAsByte<ZipUtilityCompressionLevel> Level = COMPRESSION_LEVEL_NORMAL);
 
 	/* Lambda C++ simple variant*/
 	static bool ZipWithLambda(	const FString& ArchivePath,
 								TFunction<void()> OnDoneCallback,
 								TFunction<void(float)> OnProgressCallback = nullptr,
-								TEnumAsByte<ZipUtilityCompressionFormat> format = COMPRESSION_FORMAT_UNKNOWN);
+								TEnumAsByte<ZipUtilityCompressionFormat> Format = COMPRESSION_FORMAT_UNKNOWN,
+								TEnumAsByte<ZipUtilityCompressionLevel> Level = COMPRESSION_LEVEL_NORMAL);
 
 
 	/*Queries Archive content list, calls ZipUtilityInterface list events (OnFileFound)*/
