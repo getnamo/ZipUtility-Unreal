@@ -35,7 +35,7 @@ After you've added the interface and hit Compile on your blueprint you'll have a
 
 They're explained in further detail below.
 
-##Zipping and Compressing Files
+## Zipping and Compressing Files
 
 To Zip up a folder or file, right click your event graph and add the *Zip* function.
 
@@ -47,7 +47,7 @@ Leave the Compression format to the default SevenZip or specify a format of choi
 
 If you wish to receive progress updates, pass a reference to self and ensure you have *ZipUtilityInterface* added to your blueprint. Then you can use any of the three main callbacks shown in the image. To show a progress bar, use the *OnProgress* event. Callbacks will be received on your game thread.
 
-##Unzipping and Extracting Files
+## Unzipping and Extracting Files
 
 
 To Unzip up a file, right click your event graph and add the *Unzip* function.
@@ -60,7 +60,7 @@ The plugin automatically detects the compression format used in the archive, but
 
 If you wish to receive progress updates, pass a reference to self and ensure you have *ZipUtilityInterface* added to your blueprint. Then you can use any of the three main callbacks shown in the image. To show a progress bar, use the *OnProgress* event. Callbacks will be received on your game thread.
 
-##Listing Contents in an Archive
+## Listing Contents in an Archive
 
 To list files in your archive, right click your event graph and add the *ListFilesInArchive* function.
 
@@ -70,9 +70,9 @@ Specify the full path to a suitable archive file. This function requires the use
 
 The *OnFileFound* event gets called for every file in the archive with its path and size given in bytes. This function does not extract the contents, but instead allows you to inspect files before committing to extracting their contents.
 
-##Convenience File Functions
+## Convenience File Functions
 
-###Move/Rename a File
+### Move/Rename a File
 
 Specify full path for the file you wish to move and it's destination
 
@@ -83,18 +83,18 @@ To rename it, simply change the destination name
 ![Rename Folder](http://i.imgur.com/RICA41e.png)
 
 
-###Create/Make Directory
+### Create/Make Directory
 
 ![Make Directory](http://i.imgur.com/8ocCOPF.png)
 
 
-###List Contents of Folder
+### List Contents of Folder
 
 Expects self to be a FileListInterface
 
 ![List Contents](http://i.imgur.com/PPhyxFE.png)
 
-##License
+## License
 
 MIT for ZipUtility and 7z-cpp
 
@@ -102,5 +102,5 @@ LGPL for 7za.dll, LGPL + Unrar for 7z.dll
 
 See license file for details.
 
-##Todo
+## Todo
 -Add C++ documentation/gifs
