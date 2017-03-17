@@ -52,7 +52,9 @@ bool UWindowsFileUtilityFunctionLibrary::DeleteFolderRecursively(const FString& 
 {
 	//Only allow user to delete folders sub-class to game folder
 	if (!IsSubPathOf(FullPath, FPaths::GameDir()))
+	{
 		return false;
+	}
 
 	int len = _tcslen(*FullPath);
 	TCHAR *pszFrom = new TCHAR[len + 2];

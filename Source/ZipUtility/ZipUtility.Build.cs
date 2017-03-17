@@ -78,6 +78,7 @@ public class ZipUtility : ModuleRules
 
             PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, PlatformSubPath, "atls.lib"));
             PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, PlatformSubPath, "7zpp_u.lib"));
+            PublicLibraryPaths.Add(Path.Combine(LibrariesPath, PlatformSubPath));
         }
 
         if (isLibrarySupported)

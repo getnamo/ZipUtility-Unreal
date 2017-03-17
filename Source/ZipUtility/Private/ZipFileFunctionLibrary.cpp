@@ -1,13 +1,14 @@
 #include "ZipUtilityPrivatePCH.h"
+
 #include "ZipFileFunctionLibrary.h"
 #include "ZipFileFunctionInternalCallback.h"
 #include "ListCallback.h"
 #include "ProgressCallback.h"
 #include "IPluginManager.h"
-#include "7zpp.h"
 #include "WFULambdaRunnable.h"
 #include "ZULambdaDelegate.h"
 
+#include "7zpp.h"
 
 using namespace SevenZip;
 
