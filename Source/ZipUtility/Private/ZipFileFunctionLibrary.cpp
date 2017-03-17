@@ -1,13 +1,14 @@
 #include "ZipUtilityPrivatePCH.h"
+
 #include "ZipFileFunctionLibrary.h"
 #include "ZipFileFunctionInternalCallback.h"
 #include "ListCallback.h"
 #include "ProgressCallback.h"
 #include "IPluginManager.h"
-#include "7zpp.h"
 #include "WFULambdaRunnable.h"
 #include "ZULambdaDelegate.h"
 
+#include "7zpp.h"
 
 using namespace SevenZip;
 
@@ -61,7 +62,7 @@ namespace{
 
 			RunLambdaOnGameThread([pathConst, interfaceDelegate] {
 				//UE_LOG(LogClass, Log, TEXT("All Done!"));
-				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate, pathConst);
+				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate, pathConst, EZipUtilityCompletionState::SUCCESS);
 			});
 		}
 
@@ -114,7 +115,6 @@ namespace{
 
 			RunLambdaOnGameThread([interfaceDelegate, pathString, fileString, bytesConst] {		
 				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnFileFound((UObject*)interfaceDelegate, pathString, fileString, bytesConst);
-
 			});
 
 			
@@ -126,7 +126,7 @@ namespace{
 			const FString pathString = FString(archivePath.c_str());
 
 			RunLambdaOnGameThread([interfaceDelegate, pathString] {
-				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate, pathString);
+				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate, pathString, EZipUtilityCompletionState::SUCCESS);
 			});
 		}
 		

@@ -28,7 +28,7 @@ void UZULambdaDelegate::OnProgress_Implementation(const FString& archive, float 
 	}
 }
 
-void UZULambdaDelegate::OnDone_Implementation(const FString& archive)
+void UZULambdaDelegate::OnDone_Implementation(const FString& archive, EZipUtilityCompletionState CompletionState)
 {
 	if (OnDoneCallback != nullptr)
 	{
