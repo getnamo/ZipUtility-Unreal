@@ -61,7 +61,7 @@ namespace{
 
 			RunLambdaOnGameThread([pathConst, interfaceDelegate] {
 				//UE_LOG(LogClass, Log, TEXT("All Done!"));
-				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate, pathConst);
+				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate, pathConst, EZipUtilityCompletionState::SUCCESS);
 			});
 		}
 
@@ -114,7 +114,6 @@ namespace{
 
 			RunLambdaOnGameThread([interfaceDelegate, pathString, fileString, bytesConst] {		
 				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnFileFound((UObject*)interfaceDelegate, pathString, fileString, bytesConst);
-
 			});
 
 			
@@ -126,7 +125,7 @@ namespace{
 			const FString pathString = FString(archivePath.c_str());
 
 			RunLambdaOnGameThread([interfaceDelegate, pathString] {
-				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate, pathString);
+				((IZipUtilityInterface*)interfaceDelegate)->Execute_OnDone((UObject*)interfaceDelegate, pathString, EZipUtilityCompletionState::SUCCESS);
 			});
 		}
 		

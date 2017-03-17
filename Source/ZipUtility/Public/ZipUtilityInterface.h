@@ -4,6 +4,15 @@
 
 #include "ZipUtilityInterface.generated.h"
 
+UENUM(BlueprintType)
+enum EZipUtilityCompletionState
+{
+	SUCCESS,
+	FAILURE_NOT_FOUND,
+	FAILURE_UNKNOWN
+};
+
+
 UINTERFACE(MinimalAPI)
 class UZipUtilityInterface : public UInterface
 {
@@ -27,7 +36,7 @@ public:
 	* Called when whole process is complete (e.g. unzipping completed on archive)
 	*/
 	UFUNCTION(BlueprintNativeEvent, Category = ZipUtilityProgressEvents)
-		void OnDone(const FString& archive);
+		void OnDone(const FString& archive, EZipUtilityCompletionState CompletionState);
 
 	/**
 	* Called at beginning of process (NB this only supports providing size information for up to 2gb) TODO: fix 32bit BP size issue
