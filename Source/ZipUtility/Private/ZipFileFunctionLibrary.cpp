@@ -158,7 +158,7 @@ namespace{
 		FString dllString = FString("7z.dll");		//Using 7z.dll: GNU LGPL + unRAR restriction
 		//FString dllString = FString("7za.dll");	//Using 7za.dll: GNU LGPL license, crucially doesn't support .zip out of the box
 
-		return FPaths::Combine(*PluginRootFolder(), TEXT("ThirdParty/7zpp/dll"), *PlatformString, *dllString);
+		return FPaths::ConvertRelativePathToFull(FPaths::Combine(*PluginRootFolder(), TEXT("ThirdParty/7zpp/dll"), *PlatformString, *dllString));
 	}
 
 	FString ReversePathSlashes(FString forwardPath)
@@ -390,6 +390,7 @@ namespace{
 UZipFileFunctionLibrary::UZipFileFunctionLibrary(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
+	UE_LOG(LogTemp, Log, TEXT("DLLPath is: %s"), *DLLPath());
 	SZLib.Load(*DLLPath());
 }
 
