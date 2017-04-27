@@ -199,5 +199,7 @@ LGPL for 7za.dll, LGPL + Unrar for 7z.dll
 
 See license file for details.
 
-## Todo
--Add C++ documentation/gifs
+## Help
+Add any issues you run across to https://github.com/getnamo/ZipUtility-ue4/issues
+
+or post to the [unreal forum thread](https://forums.unrealengine.com/showthread.php?95022-Plugin-ZipUtility-(7zip)).
