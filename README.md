@@ -146,7 +146,7 @@ class UMyClass : public UObject, IZipUtilityInterface
 };
 ```
 
-Because the events are BlueprintNativeEvent you add the C++ implementation of the events like so
+Because the events are of the type [BlueprintNativeEvent](https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/Reference/Functions/Specifiers/BlueprintNativeEvent/) you add the C++ implementation of the events like so
 
 ```c++
 class UMyClass : public UObject, IZipUtilityInterface
