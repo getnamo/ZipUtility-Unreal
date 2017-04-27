@@ -142,7 +142,7 @@ Let's say you have a class called UMyClass. You then add the IZipUtilityInterfac
 class UMyClass : public UObject, IZipUtilityInterface
 {
    GENERATED_BODY()
-   //...
+   ...
 };
 ```
 
