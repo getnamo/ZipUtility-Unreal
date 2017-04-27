@@ -103,7 +103,7 @@ Expects self to be a FileListInterface
 call the static function with *done* and *progress* callback lambdas e.g. if you're interested in both
 
 ```c++
-UZipFileFunctionLibrary::UnzipWithLambda(
+UZipFileFunctionLibrary::UnzipWithLambda(FString("C:/path/to/your/zip.7z"),
     []()
     {
          //Called when done
@@ -121,7 +121,7 @@ replace either with nullptr if you're not interested in that callback
 call the static function with *done* and *progress* callback lambdas e.g. if you're interested in both
 
 ```c++
-UZipFileFunctionLibrary::ZipWithLambda(
+UZipFileFunctionLibrary::ZipWithLambda(FString("C:/path/to/your/zip.7z"),
     []()
     {
          //Called when done
