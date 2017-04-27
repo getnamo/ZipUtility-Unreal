@@ -186,6 +186,8 @@ UZipFileFunctionLibrary::Unzip(FString("C:/path/to/your/zip.7z"), MyZipClass);
 
 See [ZipFileFunctionLibrary.h](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h) for all the function signatures.
 
+See [ZULambdaDelegate.h](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Private/ZULambdaDelegate.h) for an example class using the above setup to convert IZipUtilityInterface interface calls into lambda functions.
+
 
 ### Windows Utility
 
