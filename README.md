@@ -98,7 +98,7 @@ Expects self to be a FileListInterface
 
 ### Setup
 
-To use the C++ code from the plugin add it as a dependency module in your project build.cs
+To use the C++ code from the plugin add it as a dependency module in your project build.cs e.g.
 
 ```c#
 PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ZipUtility"});
