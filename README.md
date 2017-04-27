@@ -96,6 +96,16 @@ Expects self to be a FileListInterface
 
 ## C++
 
+### Setup
+
+To use the C++ code from the plugin add it as a dependency module in your project build.cs
+
+```c#
+PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ZipUtility"});
+```
+
+then ```#include "ZipFileFunctionLibrary.h"``` in the places where you'd like to use the plugin functionality.
+
 ### [Lambda](http://en.cppreference.com/w/cpp/language/lambda)
 
 #### [UnzipWithLambda](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h#L63)
