@@ -19,7 +19,7 @@ Plugin works in Windows only.
  5.	Restart the Editor and open your project again. Plugin is now ready to use.
 
 
-### Blueprint Access
+## Blueprint Access
 
 Right click anywhere in a desired blueprint to access the plugin Blueprint Function Library methods. The plugin is completely multi-threaded and will not block your game thread, fire and forget.
 
@@ -93,6 +93,103 @@ To rename it, simply change the destination name
 Expects self to be a FileListInterface
 
 ![List Contents](http://i.imgur.com/PPhyxFE.png)
+
+## C++
+
+### [Lambda](http://en.cppreference.com/w/cpp/language/lambda)
+
+#### [UnzipWithLambda](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h#L63)
+
+call the static function with *done* and *progress* callback lambdas e.g. if you're interested in both
+
+```c++
+UZipFileFunctionLibrary::UnzipWithLambda(
+    []()
+    {
+         //Called when done
+    },
+    [](float Percent)
+    {
+         //called when progress updates with % done
+    });
+```
+
+replace either with nullptr if you're not interested in that callback
+
+#### [ZipWithLambda](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h#L80)
+
+call the static function with *done* and *progress* callback lambdas e.g. if you're interested in both
+
+```c++
+UZipFileFunctionLibrary::ZipWithLambda(
+    []()
+    {
+         //Called when done
+    },
+    [](float Percent)
+    {
+         //called when progress updates with % done
+    });
+```
+
+replace either with nullptr if you're not interested in that callback
+
+### Your own class with [IZipUtilityInterface](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Public/ZipUtilityInterface.h)
+
+Let's say you have a class called UMyClass. You then add the IZipUtilityInterface to it via multiple inheritance e.g.
+
+```c++
+class UMyClass : public UObject, IZipUtilityInterface
+{
+   GENERATED_BODY()
+   //...
+};
+```
+
+Because the events are BlueprintNativeEvent you add the C++ implementation of the events like so
+
+```c++
+class UMyClass : public UObject, IZipUtilityInterface
+{
+    GENERATED_BODY()
+    ...
+
+    //event overrides
+    virtual void OnProgress_Implementation(const FString& archive, float percentage, int32 bytes) override;
+    virtual void OnDone_Implementation(const FString& archive, EZipUtilityCompletionState CompletionState) override;
+    virtual void OnStartProcess_Implementation(const FString& archive, int32 bytes) override;
+    virtual void OnFileDone_Implementation(const FString& archive, const FString& file) override;
+    virtual void OnFileFound_Implementation(const FString& archive, const FString& file, int32 size) override;
+};
+```
+
+ensure you have at least an empty implementation for each function
+
+```c++
+void UMyClass::OnProgress_Implementation(const FString& archive, float percentage, int32 bytes)
+{
+    //your code here
+}
+```
+
+To call a ziputility function you first get a valid pointer to your class (I leave that up to you) e.g.
+
+```c++
+UMyClass* MyZipClass = NewObject<UMyClass>(); //or you may already have a valid pointer from allocating elsewhere
+```
+
+then to e.g. unzip you pass the pointer to your class with the IZipUtilityInterface as your second parameter (and if you use them, any other optional parameters such as compression format)
+
+```c++
+UZipFileFunctionLibrary::Unzip(FString("C:/path/to/your/zip.7z"), MyZipClass);
+```
+
+See [ZipFileFunctionLibrary.h](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h) for all the function signatures.
+
+
+### Windows Utility
+
+For windows utility functions, the callback setup is similar, kindly refer to [WindowsFileUtilityFunctionLibrary.h](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/WindowsUtility/Public/WindowsFileUtilityFunctionLibrary.h) which may use [IWFUFileListInterface](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/WindowsUtility/Public/WFUFileListInterface.h) or [IWFUFolderWatchInterface](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/WindowsUtility/Public/WFUFolderWatchInterface.h) depending on functions used.
 
 ## License
 
