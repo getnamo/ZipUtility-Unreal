@@ -149,7 +149,7 @@ replace either with nullptr if you're not interested in that callback
 Let's say you have a class called UMyClass. You then add the IZipUtilityInterface to it via multiple inheritance e.g.
 
 ```c++
-class UMyClass : public UObject, IZipUtilityInterface
+class UMyClass : public UObject, public IZipUtilityInterface
 {
    GENERATED_BODY()
    ...
@@ -159,7 +159,7 @@ class UMyClass : public UObject, IZipUtilityInterface
 Because the events are of the type [BlueprintNativeEvent](https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/Reference/Functions/Specifiers/BlueprintNativeEvent/) you add the C++ implementation of the events like so
 
 ```c++
-class UMyClass : public UObject, IZipUtilityInterface
+class UMyClass : public UObject, public IZipUtilityInterface
 {
     GENERATED_BODY()
     ...
