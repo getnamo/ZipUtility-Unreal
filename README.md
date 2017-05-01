@@ -1,4 +1,8 @@
 # ZipUtility Plugin
+
+[![GitHub release](https://img.shields.io/github/release/getnamo/ziputility-ue4.svg)](https://github.com/getnamo/ziputility-ue4/releases)
+[![Github All Releases](https://img.shields.io/github/downloads/getnamo/ziputility-ue4/total.svg)](https://github.com/getnamo/ziputility-ue4/releases)
+
 Event driven, blueprint accessible flexible 7zip compression, archiver, and file manipulation plugin for Unreal Engine 4. Built on [7zip-cpp](https://github.com/getnamo/7zip-cpp) modernization of the [SevenZip++](http://bitbucket.org/cmcnab/sevenzip/wiki/Home) C++ wrapper for accessing the 7-zip COM-like API in 7z.dll and 7za.dll.
 
 Supports the following compression algorithms:
