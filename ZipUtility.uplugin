@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "0.3.0",
+	"VersionName": "0.3.2",
 	"FriendlyName": "ZipUtility",
 	"Description": "",
 	"Category": "Utility",
@@ -10,7 +10,7 @@
 	"DocsURL": "https://github.com/getnamo/ZipUtility-ue4",
 	"MarketplaceURL": "",
 	"SupportURL": "",
-	"EnabledByDefault": false,
+	"EnabledByDefault": true,
 	"CanContainContent": false,
 	"IsBetaVersion": false,
 	"Installed": false,

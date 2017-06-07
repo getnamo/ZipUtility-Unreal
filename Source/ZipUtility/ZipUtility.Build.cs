@@ -14,7 +14,7 @@ public class ZipUtility : ModuleRules
         get { return Path.GetFullPath(Path.Combine(ThirdPartyPath, "7zpp")); }
     }
 
-    public ZipUtility(TargetInfo Target)
+    public ZipUtility(ReadOnlyTargetRules Target) : base(Target)
     {
 
         PublicIncludePaths.AddRange(
@@ -65,7 +65,7 @@ public class ZipUtility : ModuleRules
 
         LoadLib(Target);
     }
-    public bool LoadLib(TargetInfo Target)
+    public bool LoadLib(ReadOnlyTargetRules Target)
     {
         bool isLibrarySupported = false;
 

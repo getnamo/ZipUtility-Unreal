@@ -5,7 +5,7 @@ using System.IO;
 
 public class WindowsFileUtility : ModuleRules
 {
-    public WindowsFileUtility(TargetInfo Target)
+    public WindowsFileUtility(ReadOnlyTargetRules Target) : base(Target)
     {
         PublicIncludePaths.AddRange(
             new string[] {
