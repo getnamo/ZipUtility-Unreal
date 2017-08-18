@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "0.3.2",
+	"VersionName": "0.3.3",
 	"FriendlyName": "ZipUtility",
 	"Description": "",
 	"Category": "Utility",
@@ -17,7 +17,7 @@
 	"Modules": [
 		{
 			"Name": "ZipUtility",
-			"Type": "Developer",
+			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
 				"Win64",
