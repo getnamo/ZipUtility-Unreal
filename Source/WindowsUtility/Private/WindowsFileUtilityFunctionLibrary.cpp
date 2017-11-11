@@ -51,7 +51,7 @@ bool IsSubPathOf(const FString& path, const FString& basePath)
 bool UWindowsFileUtilityFunctionLibrary::DeleteFolderRecursively(const FString& FullPath)
 {
 	//Only allow user to delete folders sub-class to game folder
-	if (!IsSubPathOf(FullPath, FPaths::GameDir()))
+	if (!IsSubPathOf(FullPath, FPaths::ProjectDir()))
 	{
 		return false;
 	}
