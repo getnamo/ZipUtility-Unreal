@@ -457,7 +457,11 @@ bool UZipFileFunctionLibrary::Unzip(const FString& archivePath, UObject* progres
 bool UZipFileFunctionLibrary::UnzipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback, TEnumAsByte<ZipUtilityCompressionFormat> format)
 {
 	UZULambdaDelegate* LambdaDelegate = NewObject<UZULambdaDelegate>();
-	LambdaDelegate->SetOnDoneCallback(OnDoneCallback);
+	LambdaDelegate->AddToRoot();
+	LambdaDelegate->SetOnDoneCallback([LambdaDelegate, OnDoneCallback]() {
+		OnDoneCallback();
+		LambdaDelegate->RemoveFromRoot();
+	});
 	LambdaDelegate->SetOnProgessCallback(OnProgressCallback);
 
 	return Unzip(ArchivePath, LambdaDelegate, format);
@@ -486,7 +490,11 @@ bool UZipFileFunctionLibrary::Zip(const FString& path, UObject* progressDelegate
 bool UZipFileFunctionLibrary::ZipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback /*= nullptr*/, TEnumAsByte<ZipUtilityCompressionFormat> Format /*= COMPRESSION_FORMAT_UNKNOWN*/, TEnumAsByte<ZipUtilityCompressionLevel> Level /*=COMPRESSION_LEVEL_NORMAL*/)
 {
 	UZULambdaDelegate* LambdaDelegate = NewObject<UZULambdaDelegate>();
-	LambdaDelegate->SetOnDoneCallback(OnDoneCallback);
+	LambdaDelegate->AddToRoot();
+	LambdaDelegate->SetOnDoneCallback([OnDoneCallback, LambdaDelegate]() {
+		OnDoneCallback();
+		LambdaDelegate->RemoveFromRoot();
+	});
 	LambdaDelegate->SetOnProgessCallback(OnProgressCallback);
 
 	return Zip(ArchivePath, LambdaDelegate, Format);
