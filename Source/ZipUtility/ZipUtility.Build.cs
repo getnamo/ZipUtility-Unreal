@@ -14,7 +14,12 @@ public class ZipUtility : ModuleRules
         get { return Path.GetFullPath(Path.Combine(ThirdPartyPath, "7zpp")); }
     }
 
-    public ZipUtility(ReadOnlyTargetRules Target) : base(Target)
+	private string ATLPath
+	{
+		get { return "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.12.25827/atlmfc"; }
+	}
+
+	public ZipUtility(ReadOnlyTargetRules Target) : base(Target)
     {
 
         PublicIncludePaths.AddRange(
@@ -28,6 +33,7 @@ public class ZipUtility : ModuleRules
             new string[] {
                 "ZipUtility/Private",
                 Path.Combine(SevenZppPath, "Include"),
+				Path.Combine(ATLPath, "include"),
 				// ... add other private include paths required here ...
 			}
             );
