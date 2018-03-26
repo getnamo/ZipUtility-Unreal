@@ -5,18 +5,15 @@
 
 uint64 WFULambdaRunnable::ThreadNumber = 0;
 
+FQueuedThreadPool* WFULambdaRunnable::ThreadPool = nullptr;
+
 WFULambdaRunnable::WFULambdaRunnable(TFunction< void()> InFunction)
 {
 	FunctionPointer = InFunction;
-	Finished = false;
-	Number = ThreadNumber;
 	
-	FString threadStatGroup = FString::Printf(TEXT("FLambdaRunnable%d"), ThreadNumber);
+	FString threadStatGroup = FString::Printf(TEXT("FLambdaRunnable%d"), ThreadNumber++);
 	Thread = NULL; 
 	Thread = FRunnableThread::Create(this, *threadStatGroup, 0, TPri_BelowNormal); //windows default = 8mb for thread, could specify more
-	ThreadNumber++;
-
-	//Runnables.Add(this);
 }
 
 WFULambdaRunnable::~WFULambdaRunnable()
@@ -27,14 +24,7 @@ WFULambdaRunnable::~WFULambdaRunnable()
 		Thread = NULL;
 	}
 
-	//Runnables.Remove(this);
-}
-
-//Init
-bool WFULambdaRunnable::Init()
-{
-	//UE_LOG(LogClass, Log, TEXT("FLambdaRunnable %d Init"), Number);
-	return true;
+	ThreadPool->Destroy();
 }
 
 //Run
@@ -47,40 +37,60 @@ uint32 WFULambdaRunnable::Run()
 	return 0;
 }
 
-//stop
-void WFULambdaRunnable::Stop()
-{
-	Finished = true;
-}
-
 void WFULambdaRunnable::Exit()
 {
-	Finished = true;
 	//UE_LOG(LogClass, Log, TEXT("FLambdaRunnable %d Exit"), Number);
 
 	//delete ourselves when we're done
 	delete this;
 }
 
+void WFULambdaRunnable::InitThreadPool(int32 NumberOfThreads)
+{
+	if (ThreadPool == nullptr)
+	{
+		ThreadPool = FQueuedThreadPool::Allocate();
+		int32 NumThreadsInThreadPool = NumberOfThreads;
+		ThreadPool->Create(NumThreadsInThreadPool, 32 * 1024);
+	}
+}
+
 void WFULambdaRunnable::EnsureCompletion()
 {
-	Stop();
 	Thread->WaitForCompletion();
 }
 
 WFULambdaRunnable* WFULambdaRunnable::RunLambdaOnBackGroundThread(TFunction< void()> InFunction)
 {
-	WFULambdaRunnable* Runnable;
 	if (FPlatformProcess::SupportsMultithreading())
 	{
-		Runnable = new WFULambdaRunnable(InFunction);
 		//UE_LOG(LogClass, Log, TEXT("FLambdaRunnable RunLambdaBackGroundThread"));
-		return Runnable;
+		return new WFULambdaRunnable(InFunction);
 	}
-	else 
+	return nullptr;
+}
+
+IQueuedWork* WFULambdaRunnable::AddLambdaToQueue(TFunction< void()> InFunction)
+{
+	if (ThreadPool == nullptr)
 	{
-		return nullptr;
+		WFULambdaRunnable::InitThreadPool(FPlatformMisc::NumberOfIOWorkerThreadsToSpawn());
 	}
+
+	if (ThreadPool)
+	{
+		return AsyncLambdaPool(*ThreadPool, InFunction);
+	}
+	return nullptr;
+}
+
+bool WFULambdaRunnable::RemoveLambdaFromQueue(IQueuedWork* Work)
+{
+	if (ThreadPool)
+	{
+		return ThreadPool->RetractQueuedWork(Work);
+	}
+	return false;
 }
 
 FGraphEventRef WFULambdaRunnable::RunShortLambdaOnGameThread(TFunction< void()> InFunction)
@@ -88,14 +98,3 @@ FGraphEventRef WFULambdaRunnable::RunShortLambdaOnGameThread(TFunction< void()> 
 	return FFunctionGraphTask::CreateAndDispatchWhenReady(InFunction, TStatId(), nullptr, ENamedThreads::GameThread);
 }
 
-void WFULambdaRunnable::ShutdownThreads()
-{
-	/*for (auto Runnable : Runnables)
-	{
-		if (Runnable != nullptr)
-		{
-			delete Runnable;
-		}
-		Runnable = nullptr;
-	}*/
-}
