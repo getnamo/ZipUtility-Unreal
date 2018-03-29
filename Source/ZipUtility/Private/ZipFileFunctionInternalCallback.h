@@ -3,6 +3,9 @@
 #include "ZipUtilityInterface.h"
 #include "ZipFileFunctionInternalCallback.generated.h"
 
+/**
+* This is used to provide a callback for unzipping single files, it ends up getting called from the ListFiles lambda.
+*/
 UCLASS(ClassGroup = ZipUtility)
 class ZIPUTILITY_API UZipFileFunctionInternalCallback : public UObject, public IZipUtilityInterface
 {
