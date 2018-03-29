@@ -32,6 +32,13 @@ enum ZipUtilityCompressionLevel
 class SevenZipCallbackHandler;
 class UZipFileFunctionInternalCallback;
 
+/** 
+ A blueprint function library encapsulating all zip operations for both C++ and blueprint use. 
+ For some operations a UZipOperation object may be returned, if you're interested in it, ensure
+ you guard it from garbage collection by e.g. storing it as a UProperty, otherwise you may safely
+ ignore it.
+*/
+
 UCLASS(ClassGroup = ZipUtility, Blueprintable)
 class ZIPUTILITY_API UZipFileFunctionLibrary : public UBlueprintFunctionLibrary
 {
