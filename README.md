@@ -1,4 +1,4 @@
-(# ZipUtility Plugin
+# ZipUtility Plugin
 
 [![GitHub release](https://img.shields.io/github/release/getnamo/ziputility-ue4.svg)](https://github.com/getnamo/ziputility-ue4/releases)
 [![Github All Releases](https://img.shields.io/github/downloads/getnamo/ziputility-ue4/total.svg)](https://github.com/getnamo/ziputility-ue4/releases)
@@ -243,4 +243,4 @@ See license file for details.
 Add any issues you run across to https://github.com/getnamo/ZipUtility-ue4/issues
 
 or post to the [unreal forum thread](https://forums.unrealengine.com/showthread.php?95022-Plugin-ZipUtility-(7zip)).
-)
+
