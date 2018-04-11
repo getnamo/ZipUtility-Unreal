@@ -261,7 +261,18 @@ namespace{
 				lister.SetCompressionFormat(libZipFormatFromUEFormat(format));
 			}
 
-			lister.ListArchive(&PrivateCallback); //&PrivateCallback
+			if (!lister.ListArchive(&PrivateCallback))
+			{
+				// If ListArchive returned false, it was most likely because the compression format was unsupported
+				// Call OnDone with a failure message, make sure to call this on the game thread.
+				if (IZipUtilityInterface* ZipInterface = Cast<IZipUtilityInterface>((UObject*)listDelegate))
+				{
+					UE_LOG(LogClass, Warning, TEXT("ZipUtility: Unknown failure for list operation on %s"), *path);
+					UZipFileFunctionLibrary::RunLambdaOnGameThread([ZipInterface, listDelegate, path] {
+						ZipInterface->Execute_OnDone((UObject*)listDelegate, *path, EZipUtilityCompletionState::FAILURE_UNKNOWN);
+					});
+				}
+			}
 		});
 	}
 
