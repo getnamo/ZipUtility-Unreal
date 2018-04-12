@@ -65,7 +65,7 @@ public:
 
 	/* Unzips archive at current path. Automatically determines compression if unknown. Calls ZipUtilityInterface progress events. */
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
-	static UZipOperation* Unzip(const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat Format = COMPRESSION_FORMAT_UNKNOWN);
+	static UZipOperation* Unzip(const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat Format);
 
 	/* Lambda C++ simple variant*/
 	static UZipOperation* UnzipWithLambda(	const FString& ArchivePath,
