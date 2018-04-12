@@ -174,11 +174,12 @@ namespace{
 			//UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
 			SevenZipExtractor Extractor(SZLib, *ArchivePath);
 
-			if (Format == COMPRESSION_FORMAT_UNKNOWN) 
+
+			if (Format == COMPRESSION_FORMAT_UNKNOWN)
 			{
 				if (!Extractor.DetectCompressionFormat())
 				{
-					Extractor.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
+					UE_LOG(LogTemp, Log, TEXT("auto-compression detection did not succeed, passing in unknown format to 7zip library."));
 				}
 			}
 			else
@@ -223,11 +224,11 @@ namespace{
 			//UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
 			SevenZipExtractor Extractor(SZLib, *ArchivePath);
 
-			if (Format == COMPRESSION_FORMAT_UNKNOWN) 
+			if (Format == COMPRESSION_FORMAT_UNKNOWN)
 			{
 				if (!Extractor.DetectCompressionFormat())
 				{
-					Extractor.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
+					UE_LOG(LogTemp, Log, TEXT("auto-compression detection did not succeed, passing in unknown format to 7zip library."));
 				}
 			}
 			else
@@ -257,7 +258,7 @@ namespace{
 			{
 				if (!Lister.DetectCompressionFormat())
 				{
-					Lister.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
+					UE_LOG(LogTemp, Log, TEXT("auto-compression detection did not succeed, passing in unknown format to 7zip library."));
 				}
 			}
 			else
