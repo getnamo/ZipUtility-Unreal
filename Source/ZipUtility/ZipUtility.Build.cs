@@ -16,10 +16,10 @@ public class ZipUtility : ModuleRules
 
 	private string ATLPath
 	{
-		get { return "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.12.25827/atlmfc"; }
+		get { return "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.13.26128/atlmfc"; }
 	}
 
-	public ZipUtility(ReadOnlyTargetRules Target) : base(Target)
+    public ZipUtility(ReadOnlyTargetRules Target) : base(Target)
     {
 
         PublicIncludePaths.AddRange(
