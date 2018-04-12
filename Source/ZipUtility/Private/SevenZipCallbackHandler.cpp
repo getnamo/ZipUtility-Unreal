@@ -4,7 +4,7 @@
 
 void SevenZipCallbackHandler::OnProgress(const TString& archivePath, uint64 bytes)
 {
-	const UObject* interfaceDelegate = progressDelegate;
+	const UObject* interfaceDelegate = ProgressDelegate;
 	const uint64 bytesConst = bytes;
 	const FString pathConst = FString(archivePath.c_str());
 
@@ -20,7 +20,7 @@ void SevenZipCallbackHandler::OnProgress(const TString& archivePath, uint64 byte
 
 void SevenZipCallbackHandler::OnDone(const TString& archivePath)
 {
-	const UObject* interfaceDelegate = progressDelegate;
+	const UObject* interfaceDelegate = ProgressDelegate;
 	const FString pathConst = FString(archivePath.c_str());
 
 	UZipFileFunctionLibrary::RunLambdaOnGameThread([pathConst, interfaceDelegate] {
@@ -31,7 +31,7 @@ void SevenZipCallbackHandler::OnDone(const TString& archivePath)
 
 void SevenZipCallbackHandler::OnFileDone(const TString& archivePath, const TString& filePath, uint64 bytes)
 {
-	const UObject* interfaceDelegate = progressDelegate;
+	const UObject* interfaceDelegate = ProgressDelegate;
 	const FString pathConst = FString(archivePath.c_str());
 	const FString filePathConst = FString(filePath.c_str());
 	const uint64 bytesConst = bytes;
@@ -57,7 +57,7 @@ void SevenZipCallbackHandler::OnStartWithTotal(const TString& archivePath, unsig
 	TotalBytes = totalBytes;
 	BytesLeft = TotalBytes;
 
-	const UObject* interfaceDelegate = progressDelegate;
+	const UObject* interfaceDelegate = ProgressDelegate;
 	const uint64 bytesConst = TotalBytes;
 	const FString pathConst = FString(archivePath.c_str());
 
@@ -68,7 +68,7 @@ void SevenZipCallbackHandler::OnStartWithTotal(const TString& archivePath, unsig
 }
 void SevenZipCallbackHandler::OnFileFound(const TString& archivePath, const TString& filePath, int size)
 {
-	const UObject* interfaceDelegate = progressDelegate;
+	const UObject* interfaceDelegate = ProgressDelegate;
 	const uint64 bytesConst = TotalBytes;
 	const FString pathString = FString(archivePath.c_str());
 	const FString fileString = FString(filePath.c_str());
@@ -79,7 +79,7 @@ void SevenZipCallbackHandler::OnFileFound(const TString& archivePath, const TStr
 }
 void SevenZipCallbackHandler::OnListingDone(const TString& archivePath)
 {
-	const UObject* interfaceDelegate = progressDelegate;
+	const UObject* interfaceDelegate = ProgressDelegate;
 	const FString pathString = FString(archivePath.c_str());
 
 	UZipFileFunctionLibrary::RunLambdaOnGameThread([interfaceDelegate, pathString] {

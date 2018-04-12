@@ -54,10 +54,10 @@ namespace{
 #endif
 		//Swap these to change which license you wish to fall under for zip-utility
 
-		FString dllString = FString("7z.dll");		//Using 7z.dll: GNU LGPL + unRAR restriction
+		FString DLLString = FString("7z.dll");		//Using 7z.dll: GNU LGPL + unRAR restriction
 		//FString dllString = FString("7za.dll");	//Using 7za.dll: GNU LGPL license, crucially doesn't support .zip out of the box
 
-		return FPaths::ConvertRelativePathToFull(FPaths::Combine(*PluginRootFolder(), TEXT("ThirdParty/7zpp/dll"), *PlatformString, *dllString));
+		return FPaths::ConvertRelativePathToFull(FPaths::Combine(*PluginRootFolder(), TEXT("ThirdParty/7zpp/dll"), *PlatformString, *DLLString));
 	}
 
 	FString ReversePathSlashes(FString forwardPath)
@@ -65,17 +65,17 @@ namespace{
 		return forwardPath.Replace(TEXT("/"), TEXT("\\"));
 	}
 
-	bool isValidDirectory(FString& directory, FString& fileName, const FString& path)
+	bool IsValidDirectory(FString& Directory, FString& FileName, const FString& Path)
 	{
-		bool found = path.Split(TEXT("/"), &directory, &fileName, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+		bool Found = Path.Split(TEXT("/"), &Directory, &FileName, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
 		//try a back split
-		if (!found)
+		if (!Found)
 		{
-			found = path.Split(TEXT("\\"), &directory, &fileName, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+			Found = Path.Split(TEXT("\\"), &Directory, &FileName, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
 		}
 
-		//No valid directory found
-		if (!found)
+		//No valid Directory found
+		if (!Found)
 			return false;
 		else
 			return true;
@@ -95,8 +95,8 @@ namespace{
 		}
 	}
 
-	SevenZip::CompressionFormatEnum libZipFormatFromUEFormat(ZipUtilityCompressionFormat ueFormat) {
-		switch (ueFormat)
+	SevenZip::CompressionFormatEnum libZipFormatFromUEFormat(ZipUtilityCompressionFormat UeFormat) {
+		switch (UeFormat)
 		{
 		case COMPRESSION_FORMAT_UNKNOWN:
 			return CompressionFormat::Unknown;
@@ -161,45 +161,45 @@ namespace{
 	
 
 	//Background Thread convenience functions
-	UZipOperation* UnzipFilesOnBGThreadWithFormat(const TArray<int32> fileIndices, const FString& archivePath, const FString& destinationDirectory, const UObject* progressDelegate, ZipUtilityCompressionFormat format)
+	UZipOperation* UnzipFilesOnBGThreadWithFormat(const TArray<int32> FileIndices, const FString& ArchivePath, const FString& DestinationDirectory, const UObject* progressDelegate, ZipUtilityCompressionFormat Format)
 	{
 		UZipOperation* ZipOperation = NewObject<UZipOperation>();
 
-		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, fileIndices, archivePath, destinationDirectory, format, ZipOperation] 
+		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, FileIndices, ArchivePath, DestinationDirectory, Format, ZipOperation] 
 		{
 			SevenZipCallbackHandler PrivateCallback;
-			PrivateCallback.progressDelegate = (UObject*)progressDelegate;
+			PrivateCallback.ProgressDelegate = (UObject*)progressDelegate;
 			ZipOperation->SetCallbackHandler(&PrivateCallback);
 
 			//UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
-			SevenZipExtractor extractor(SZLib, *archivePath);
+			SevenZipExtractor Extractor(SZLib, *ArchivePath);
 
-			if (format == COMPRESSION_FORMAT_UNKNOWN) 
+			if (Format == COMPRESSION_FORMAT_UNKNOWN) 
 			{
-				if (!extractor.DetectCompressionFormat())
+				if (!Extractor.DetectCompressionFormat())
 				{
-					extractor.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
+					Extractor.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
 				}
 			}
 			else
 			{
-				extractor.SetCompressionFormat(libZipFormatFromUEFormat(format));
+				Extractor.SetCompressionFormat(libZipFormatFromUEFormat(Format));
 			}
 
 			// Extract indices
-			const int32 numberFiles = fileIndices.Num(); 
-			unsigned int* indices = new unsigned int[numberFiles]; 
+			const int32 NumberFiles = FileIndices.Num(); 
+			unsigned int* Indices = new unsigned int[NumberFiles]; 
 
-			for (int32 idx = 0; idx < numberFiles; idx++)
+			for (int32 idx = 0; idx < NumberFiles; idx++)
 			{
-				indices[idx] = fileIndices[idx]; 
+				Indices[idx] = FileIndices[idx]; 
 			}
 			
 			// Perform the extraction
-			extractor.ExtractFilesFromArchive(indices, numberFiles, *destinationDirectory, &PrivateCallback);
+			Extractor.ExtractFilesFromArchive(Indices, NumberFiles, *DestinationDirectory, &PrivateCallback);
 
 			// Clean up the indices
-			delete indices;
+			delete Indices;
 
 			// Null out the callback handler now that we're exiting
 			ZipOperation->SetCallbackHandler(nullptr);
@@ -217,25 +217,25 @@ namespace{
 		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, archivePath, destinationDirectory, format, ZipOperation] 
 		{
 			SevenZipCallbackHandler PrivateCallback;
-			PrivateCallback.progressDelegate = (UObject*)progressDelegate;
+			PrivateCallback.ProgressDelegate = (UObject*)progressDelegate;
 			ZipOperation->SetCallbackHandler(&PrivateCallback);
 
 			//UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
-			SevenZipExtractor extractor(SZLib, *archivePath);
+			SevenZipExtractor Extractor(SZLib, *archivePath);
 
 			if (format == COMPRESSION_FORMAT_UNKNOWN) 
 			{
-				if (!extractor.DetectCompressionFormat())
+				if (!Extractor.DetectCompressionFormat())
 				{
-					extractor.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
+					Extractor.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
 				}
 			}
 			else
 			{
-				extractor.SetCompressionFormat(libZipFormatFromUEFormat(format));
+				Extractor.SetCompressionFormat(libZipFormatFromUEFormat(format));
 			}
 
-			extractor.ExtractArchive(*destinationDirectory, &PrivateCallback);
+			Extractor.ExtractArchive(*destinationDirectory, &PrivateCallback);
 
 			// Null out the callback handler now that we're exiting
 			ZipOperation->SetCallbackHandler(nullptr);
@@ -245,83 +245,83 @@ namespace{
 		return ZipOperation;
 	}
 
-	void ListOnBGThread(const FString& path, const FString& directory, const UObject* listDelegate, ZipUtilityCompressionFormat format)
+	void ListOnBGThread(const FString& Path, const FString& Directory, const UObject* ListDelegate, ZipUtilityCompressionFormat Format)
 	{
 		//RunLongLambdaOnAnyThread - this shouldn't take long, but if it lags, swap the lambda methods
-		RunLambdaOnAnyThread([listDelegate, path, format, directory] {
+		RunLambdaOnAnyThread([ListDelegate, Path, Format, Directory] {
 			SevenZipCallbackHandler PrivateCallback;
-			PrivateCallback.progressDelegate = (UObject*)listDelegate;
-			SevenZipLister lister(SZLib, *path);
+			PrivateCallback.ProgressDelegate = (UObject*)ListDelegate;
+			SevenZipLister Lister(SZLib, *Path);
 
-			if (format == COMPRESSION_FORMAT_UNKNOWN) 
+			if (Format == COMPRESSION_FORMAT_UNKNOWN) 
 			{
-				if (!lister.DetectCompressionFormat())
+				if (!Lister.DetectCompressionFormat())
 				{
-					lister.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
+					Lister.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
 				}
 			}
 			else
 			{
-				lister.SetCompressionFormat(libZipFormatFromUEFormat(format));
+				Lister.SetCompressionFormat(libZipFormatFromUEFormat(Format));
 			}
 
-			if (!lister.ListArchive(&PrivateCallback))
+			if (!Lister.ListArchive(&PrivateCallback))
 			{
 				// If ListArchive returned false, it was most likely because the compression format was unsupported
 				// Call OnDone with a failure message, make sure to call this on the game thread.
-				if (IZipUtilityInterface* ZipInterface = Cast<IZipUtilityInterface>((UObject*)listDelegate))
+				if (IZipUtilityInterface* ZipInterface = Cast<IZipUtilityInterface>((UObject*)ListDelegate))
 				{
-					UE_LOG(LogClass, Warning, TEXT("ZipUtility: Unknown failure for list operation on %s"), *path);
-					UZipFileFunctionLibrary::RunLambdaOnGameThread([ZipInterface, listDelegate, path] 
+					UE_LOG(LogClass, Warning, TEXT("ZipUtility: Unknown failure for list operation on %s"), *Path);
+					UZipFileFunctionLibrary::RunLambdaOnGameThread([ZipInterface, ListDelegate, Path] 
 					{
-						ZipInterface->Execute_OnDone((UObject*)listDelegate, *path, EZipUtilityCompletionState::FAILURE_UNKNOWN);
+						ZipInterface->Execute_OnDone((UObject*)ListDelegate, *Path, EZipUtilityCompletionState::FAILURE_UNKNOWN);
 					});
 				}
 			}
 		});
 	}
 
-	UZipOperation* ZipOnBGThread(const FString& path, const FString& fileName, const FString& directory, const UObject* progressDelegate, ZipUtilityCompressionFormat ueCompressionformat, ZipUtilityCompressionLevel ueCompressionlevel)
+	UZipOperation* ZipOnBGThread(const FString& Path, const FString& FileName, const FString& Directory, const UObject* ProgressDelegate, ZipUtilityCompressionFormat UeCompressionformat, ZipUtilityCompressionLevel UeCompressionlevel)
 	{
 		UZipOperation* ZipOperation = NewObject<UZipOperation>();
 
-		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, fileName, path, ueCompressionformat, ueCompressionlevel, directory, ZipOperation] 
+		IQueuedWork* Work = RunLambdaOnThreadPool([ProgressDelegate, FileName, Path, UeCompressionformat, UeCompressionlevel, Directory, ZipOperation] 
 		{
 			SevenZipCallbackHandler PrivateCallback;
-			PrivateCallback.progressDelegate = (UObject*)progressDelegate;
+			PrivateCallback.ProgressDelegate = (UObject*)ProgressDelegate;
 			ZipOperation->SetCallbackHandler(&PrivateCallback);
 
 			//Set the zip format
-			ZipUtilityCompressionFormat ueFormat = ueCompressionformat;
+			ZipUtilityCompressionFormat UeFormat = UeCompressionformat;
 
-			if (ueFormat == COMPRESSION_FORMAT_UNKNOWN) 
+			if (UeFormat == COMPRESSION_FORMAT_UNKNOWN) 
 			{
-				ueFormat = COMPRESSION_FORMAT_ZIP;
+				UeFormat = COMPRESSION_FORMAT_ZIP;
 			}
 			//Disallow creating .rar archives as per unrar restriction, this won't work anyway so redirect to 7z
-			else if (ueFormat == COMPRESSION_FORMAT_RAR) 
+			else if (UeFormat == COMPRESSION_FORMAT_RAR) 
 			{
 				UE_LOG(LogClass, Warning, TEXT("ZipUtility: Rar compression not supported for creating archives, re-targeting as 7z."));
-				ueFormat = COMPRESSION_FORMAT_SEVEN_ZIP;
+				UeFormat = COMPRESSION_FORMAT_SEVEN_ZIP;
 			}
 			
 			//concatenate the output filename
-			FString outputFileName = FString::Printf(TEXT("%s/%s%s"), *directory, *fileName, *defaultExtensionFromUEFormat(ueFormat));
+			FString OutputFileName = FString::Printf(TEXT("%s/%s%s"), *Directory, *FileName, *defaultExtensionFromUEFormat(UeFormat));
 			//UE_LOG(LogClass, Log, TEXT("\noutputfile is: <%s>\n path is: <%s>"), *outputFileName, *path);
 			
-			SevenZipCompressor compressor(SZLib, *ReversePathSlashes(outputFileName));
-			compressor.SetCompressionFormat(libZipFormatFromUEFormat(ueFormat));
-			compressor.SetCompressionLevel(libZipLevelFromUELevel(ueCompressionlevel));
+			SevenZipCompressor compressor(SZLib, *ReversePathSlashes(OutputFileName));
+			compressor.SetCompressionFormat(libZipFormatFromUEFormat(UeFormat));
+			compressor.SetCompressionLevel(libZipLevelFromUELevel(UeCompressionlevel));
 
-			if (PathIsDirectory(*path))
+			if (PathIsDirectory(*Path))
 			{
 				//UE_LOG(LogClass, Log, TEXT("Compressing Folder"));
-				compressor.CompressDirectory(*ReversePathSlashes(path), &PrivateCallback);
+				compressor.CompressDirectory(*ReversePathSlashes(Path), &PrivateCallback);
 			}
 			else
 			{
 				//UE_LOG(LogClass, Log, TEXT("Compressing File"));
-				compressor.CompressFile(*ReversePathSlashes(path), &PrivateCallback);
+				compressor.CompressFile(*ReversePathSlashes(Path), &PrivateCallback);
 			}
 
 			// Null out the callback handler
@@ -376,11 +376,11 @@ UZipOperation* UZipFileFunctionLibrary::UnzipFilesTo(const TArray<int32> fileInd
 
 UZipOperation* UZipFileFunctionLibrary::UnzipFiles(const TArray<int32> fileIndices, const FString & ArchivePath, UObject * ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
 {
-	FString directory;
-	FString fileName;
+	FString Directory;
+	FString FileName;
 
-	//Check directory validity
-	if (!isValidDirectory(directory, fileName, ArchivePath))
+	//Check Directory validity
+	if (!IsValidDirectory(Directory, FileName, ArchivePath))
 	{
 		return nullptr;
 	}
@@ -391,21 +391,21 @@ UZipOperation* UZipFileFunctionLibrary::UnzipFiles(const TArray<int32> fileIndic
 		return nullptr;
 	}
 
-	return UnzipFilesTo(fileIndices, ArchivePath, directory, ZipUtilityInterfaceDelegate, format);
+	return UnzipFilesTo(fileIndices, ArchivePath, Directory, ZipUtilityInterfaceDelegate, format);
 }
 
-UZipOperation* UZipFileFunctionLibrary::Unzip(const FString& archivePath, UObject* progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
+UZipOperation* UZipFileFunctionLibrary::Unzip(const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat Format /*= COMPRESSION_FORMAT_UNKNOWN*/)
 {
-	FString directory;
-	FString fileName;
+	FString Directory;
+	FString FileName;
 
-	//Check directory validity
-	if (!isValidDirectory(directory, fileName, archivePath))
+	//Check Directory validity
+	if (!IsValidDirectory(Directory, FileName, ArchivePath))
 	{
 		return nullptr;
 	}
 
-	return UnzipTo(archivePath, directory, progressDelegate, COMPRESSION_FORMAT_UNKNOWN);
+	return UnzipTo(ArchivePath, Directory, ZipUtilityInterfaceDelegate, Format);
 }
 
 UZipOperation* UZipFileFunctionLibrary::UnzipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback, TEnumAsByte<ZipUtilityCompressionFormat> format)
@@ -430,16 +430,16 @@ UZipOperation* UZipFileFunctionLibrary::UnzipTo(const FString& archivePath, cons
 
 UZipOperation* UZipFileFunctionLibrary::Zip(const FString& path, UObject* progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> Format, TEnumAsByte<ZipUtilityCompressionLevel> Level)
 {
-	FString directory;
-	FString fileName;
+	FString Directory;
+	FString FileName;
 
-	//Check directory validity
-	if (!isValidDirectory(directory, fileName, path))
+	//Check Directory validity
+	if (!IsValidDirectory(Directory, FileName, path))
 	{
 		return nullptr;
 	}
 
-	return ZipOnBGThread(path, fileName, directory, progressDelegate, Format, Level);
+	return ZipOnBGThread(path, FileName, Directory, progressDelegate, Format, Level);
 }
 
 UZipOperation* UZipFileFunctionLibrary::ZipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback /*= nullptr*/, TEnumAsByte<ZipUtilityCompressionFormat> Format /*= COMPRESSION_FORMAT_UNKNOWN*/, TEnumAsByte<ZipUtilityCompressionLevel> Level /*=COMPRESSION_LEVEL_NORMAL*/)
@@ -456,18 +456,18 @@ UZipOperation* UZipFileFunctionLibrary::ZipWithLambda(const FString& ArchivePath
 	return Zip(ArchivePath, LambdaDelegate, Format);
 }
 
-bool UZipFileFunctionLibrary::ListFilesInArchive(const FString& path, UObject* listDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
+bool UZipFileFunctionLibrary::ListFilesInArchive(const FString& path, UObject* ListDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
 {
-	FString directory;
-	FString fileName;
+	FString Directory;
+	FString FileName;
 
-	//Check directory validity
-	if (!isValidDirectory(directory, fileName, path))
+	//Check Directory validity
+	if (!IsValidDirectory(Directory, FileName, path))
 	{
 		return false;
 	}
 
-	ListOnBGThread(path, directory, listDelegate, format);
+	ListOnBGThread(path, Directory, ListDelegate, format);
 	return true;
 }
 

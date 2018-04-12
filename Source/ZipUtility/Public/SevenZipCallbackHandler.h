@@ -23,6 +23,6 @@ public:
 	
 	uint64 BytesLeft = 0;
 	uint64 TotalBytes = 0;
-	UObject* progressDelegate = nullptr;
+	UObject* ProgressDelegate = nullptr;
 	FThreadSafeBool bCancelOperation = false;
 };
