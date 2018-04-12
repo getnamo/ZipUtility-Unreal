@@ -26,6 +26,10 @@ class WINDOWSFILEUTILITY_API UWindowsFileUtilityFunctionLibrary : public UBluepr
 {
 	GENERATED_UCLASS_BODY()
 
+		
+	UFUNCTION(BlueprintCallable, Category = WindowsFileUtility)
+	static bool DoesFileExist(const FString& FullPath);
+
 	/*Expects full path including name. you can use this function to rename files.*/
 	UFUNCTION(BlueprintCallable, Category = WindowsFileUtility)
 	static bool MoveFileTo(const FString& From, const FString& To);

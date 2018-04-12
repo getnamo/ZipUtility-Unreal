@@ -16,6 +16,14 @@ UWindowsFileUtilityFunctionLibrary::UWindowsFileUtilityFunctionLibrary(const cla
 
 #include "AllowWindowsPlatformTypes.h"
 #include <shellapi.h>
+#include <Shlwapi.h>
+
+#pragma comment(lib, "Shlwapi.lib")
+
+bool UWindowsFileUtilityFunctionLibrary::DoesFileExist(const FString& FullPath)
+{
+	return 0 != PathFileExistsW(*FullPath);
+}
 
 bool UWindowsFileUtilityFunctionLibrary::MoveFileTo(const FString& From, const FString& To)
 {
