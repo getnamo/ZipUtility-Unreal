@@ -347,7 +347,7 @@ UZipFileFunctionLibrary::~UZipFileFunctionLibrary()
 	SZLib.Free();
 }
 
-bool UZipFileFunctionLibrary::UnzipFileNamed(const FString& archivePath, const FString& Name, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format /*= COMPRESSION_FORMAT_UNKNOWN*/)
+bool UZipFileFunctionLibrary::UnzipFileNamed(const FString& archivePath, const FString& Name, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat format /*= COMPRESSION_FORMAT_UNKNOWN*/)
 {	
 	UZipFileFunctionInternalCallback* InternalCallback = NewObject<UZipFileFunctionInternalCallback>();
 	InternalCallback->SetFlags(RF_MarkAsRootSet);
@@ -358,7 +358,7 @@ bool UZipFileFunctionLibrary::UnzipFileNamed(const FString& archivePath, const F
 	return true;
 }
 
-bool UZipFileFunctionLibrary::UnzipFileNamedTo(const FString& archivePath, const FString& Name, const FString& destinationPath, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format /*= COMPRESSION_FORMAT_UNKNOWN*/)
+bool UZipFileFunctionLibrary::UnzipFileNamedTo(const FString& archivePath, const FString& Name, const FString& destinationPath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat format /*= COMPRESSION_FORMAT_UNKNOWN*/)
 {
 	UZipFileFunctionInternalCallback* InternalCallback = NewObject<UZipFileFunctionInternalCallback>();
 	InternalCallback->SetFlags(RF_MarkAsRootSet);
@@ -369,12 +369,12 @@ bool UZipFileFunctionLibrary::UnzipFileNamedTo(const FString& archivePath, const
 	return true;
 }
 
-UZipOperation* UZipFileFunctionLibrary::UnzipFilesTo(const TArray<int32> fileIndices, const FString & archivePath, const FString & destinationPath, UObject * ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
+UZipOperation* UZipFileFunctionLibrary::UnzipFilesTo(const TArray<int32> fileIndices, const FString & archivePath, const FString & destinationPath, UObject * ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat format)
 {
 	return UnzipFilesOnBGThreadWithFormat(fileIndices, archivePath, destinationPath, ZipUtilityInterfaceDelegate, format);
 }
 
-UZipOperation* UZipFileFunctionLibrary::UnzipFiles(const TArray<int32> fileIndices, const FString & ArchivePath, UObject * ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
+UZipOperation* UZipFileFunctionLibrary::UnzipFiles(const TArray<int32> fileIndices, const FString & ArchivePath, UObject * ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat format)
 {
 	FString Directory;
 	FString FileName;
@@ -408,7 +408,7 @@ UZipOperation* UZipFileFunctionLibrary::Unzip(const FString& ArchivePath, UObjec
 	return UnzipTo(ArchivePath, Directory, ZipUtilityInterfaceDelegate, Format);
 }
 
-UZipOperation* UZipFileFunctionLibrary::UnzipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback, TEnumAsByte<ZipUtilityCompressionFormat> Format)
+UZipOperation* UZipFileFunctionLibrary::UnzipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback, ZipUtilityCompressionFormat Format)
 {
 	UZULambdaDelegate* LambdaDelegate = NewObject<UZULambdaDelegate>();
 	LambdaDelegate->AddToRoot();
@@ -423,12 +423,12 @@ UZipOperation* UZipFileFunctionLibrary::UnzipWithLambda(const FString& ArchivePa
 }
 
 
-UZipOperation* UZipFileFunctionLibrary::UnzipTo(const FString& ArchivePath, const FString& DestinationPath, UObject* ZipUtilityInterfaceDelegate, TEnumAsByte<ZipUtilityCompressionFormat> Format)
+UZipOperation* UZipFileFunctionLibrary::UnzipTo(const FString& ArchivePath, const FString& DestinationPath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat Format)
 {
 	return UnzipOnBGThreadWithFormat(ArchivePath, DestinationPath, ZipUtilityInterfaceDelegate, Format);
 }
 
-UZipOperation* UZipFileFunctionLibrary::Zip(const FString& path, UObject* progressDelegate, TEnumAsByte<ZipUtilityCompressionFormat> Format, TEnumAsByte<ZipUtilityCompressionLevel> Level)
+UZipOperation* UZipFileFunctionLibrary::Zip(const FString& path, UObject* progressDelegate, ZipUtilityCompressionFormat Format, TEnumAsByte<ZipUtilityCompressionLevel> Level)
 {
 	FString Directory;
 	FString FileName;
@@ -442,7 +442,7 @@ UZipOperation* UZipFileFunctionLibrary::Zip(const FString& path, UObject* progre
 	return ZipOnBGThread(path, FileName, Directory, progressDelegate, Format, Level);
 }
 
-UZipOperation* UZipFileFunctionLibrary::ZipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback /*= nullptr*/, TEnumAsByte<ZipUtilityCompressionFormat> Format /*= COMPRESSION_FORMAT_UNKNOWN*/, TEnumAsByte<ZipUtilityCompressionLevel> Level /*=COMPRESSION_LEVEL_NORMAL*/)
+UZipOperation* UZipFileFunctionLibrary::ZipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback /*= nullptr*/, ZipUtilityCompressionFormat Format /*= COMPRESSION_FORMAT_UNKNOWN*/, TEnumAsByte<ZipUtilityCompressionLevel> Level /*=COMPRESSION_LEVEL_NORMAL*/)
 {
 	UZULambdaDelegate* LambdaDelegate = NewObject<UZULambdaDelegate>();
 	LambdaDelegate->AddToRoot();
@@ -456,7 +456,7 @@ UZipOperation* UZipFileFunctionLibrary::ZipWithLambda(const FString& ArchivePath
 	return Zip(ArchivePath, LambdaDelegate, Format);
 }
 
-bool UZipFileFunctionLibrary::ListFilesInArchive(const FString& path, UObject* ListDelegate, TEnumAsByte<ZipUtilityCompressionFormat> format)
+bool UZipFileFunctionLibrary::ListFilesInArchive(const FString& path, UObject* ListDelegate, ZipUtilityCompressionFormat format)
 {
 	FString Directory;
 	FString FileName;
