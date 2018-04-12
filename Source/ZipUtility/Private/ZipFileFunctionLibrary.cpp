@@ -8,6 +8,7 @@
 #include "WFULambdaRunnable.h"
 #include "ZULambdaDelegate.h"
 #include "SevenZipCallbackHandler.h"
+#include "WindowsFileUtilityFunctionLibrary.h"
 
 #include "7zpp.h"
 
@@ -161,14 +162,14 @@ namespace{
 	
 
 	//Background Thread convenience functions
-	UZipOperation* UnzipFilesOnBGThreadWithFormat(const TArray<int32> FileIndices, const FString& ArchivePath, const FString& DestinationDirectory, const UObject* progressDelegate, ZipUtilityCompressionFormat Format)
+	UZipOperation* UnzipFilesOnBGThreadWithFormat(const TArray<int32> FileIndices, const FString& ArchivePath, const FString& DestinationDirectory, const UObject* ProgressDelegate, ZipUtilityCompressionFormat Format)
 	{
 		UZipOperation* ZipOperation = NewObject<UZipOperation>();
 
-		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, FileIndices, ArchivePath, DestinationDirectory, Format, ZipOperation] 
+		IQueuedWork* Work = RunLambdaOnThreadPool([ProgressDelegate, FileIndices, ArchivePath, DestinationDirectory, Format, ZipOperation] 
 		{
 			SevenZipCallbackHandler PrivateCallback;
-			PrivateCallback.ProgressDelegate = (UObject*)progressDelegate;
+			PrivateCallback.ProgressDelegate = (UObject*)ProgressDelegate;
 			ZipOperation->SetCallbackHandler(&PrivateCallback);
 
 			//UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
@@ -401,8 +402,9 @@ UZipOperation* UZipFileFunctionLibrary::Unzip(const FString& ArchivePath, UObjec
 	FString FileName;
 
 	//Check Directory validity
-	if (!IsValidDirectory(Directory, FileName, ArchivePath))
+	if (!IsValidDirectory(Directory, FileName, ArchivePath) || !UWindowsFileUtilityFunctionLibrary::DoesFileExist(ArchivePath))
 	{
+		((IZipUtilityInterface*)ZipUtilityInterfaceDelegate)->Execute_OnDone((UObject*)ZipUtilityInterfaceDelegate, ArchivePath, EZipUtilityCompletionState::FAILURE_NOT_FOUND);
 		return nullptr;
 	}
 
@@ -429,18 +431,19 @@ UZipOperation* UZipFileFunctionLibrary::UnzipTo(const FString& ArchivePath, cons
 	return UnzipOnBGThreadWithFormat(ArchivePath, DestinationPath, ZipUtilityInterfaceDelegate, Format);
 }
 
-UZipOperation* UZipFileFunctionLibrary::Zip(const FString& path, UObject* progressDelegate, ZipUtilityCompressionFormat Format, TEnumAsByte<ZipUtilityCompressionLevel> Level)
+UZipOperation* UZipFileFunctionLibrary::Zip(const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat Format, TEnumAsByte<ZipUtilityCompressionLevel> Level)
 {
 	FString Directory;
 	FString FileName;
 
-	//Check Directory validity
-	if (!IsValidDirectory(Directory, FileName, path))
+	//Check Directory and File validity
+	if (!IsValidDirectory(Directory, FileName, ArchivePath) || !UWindowsFileUtilityFunctionLibrary::DoesFileExist(ArchivePath))
 	{
+		((IZipUtilityInterface*)ZipUtilityInterfaceDelegate)->Execute_OnDone((UObject*)ZipUtilityInterfaceDelegate, ArchivePath, EZipUtilityCompletionState::FAILURE_NOT_FOUND);
 		return nullptr;
 	}
 
-	return ZipOnBGThread(path, FileName, Directory, progressDelegate, Format, Level);
+	return ZipOnBGThread(ArchivePath, FileName, Directory, ZipUtilityInterfaceDelegate, Format, Level);
 }
 
 UZipOperation* UZipFileFunctionLibrary::ZipWithLambda(const FString& ArchivePath, TFunction<void()> OnDoneCallback, TFunction<void(float)> OnProgressCallback /*= nullptr*/, ZipUtilityCompressionFormat Format /*= COMPRESSION_FORMAT_UNKNOWN*/, TEnumAsByte<ZipUtilityCompressionLevel> Level /*=COMPRESSION_LEVEL_NORMAL*/)

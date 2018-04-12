@@ -26,7 +26,9 @@ void UZipFileFunctionInternalCallback::OnFileFound_Implementation(const FString&
 		}
 
 		if (bSingleFile)
+		{
 			bFileFound = true;
+		}
 	}
 
 	FileIndex++;
