@@ -165,7 +165,8 @@ namespace{
 	{
 		UZipOperation* ZipOperation = NewObject<UZipOperation>();
 
-		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, fileIndices, archivePath, destinationDirectory, format, ZipOperation] {
+		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, fileIndices, archivePath, destinationDirectory, format, ZipOperation] 
+		{
 			SevenZipCallbackHandler PrivateCallback;
 			PrivateCallback.progressDelegate = (UObject*)progressDelegate;
 			ZipOperation->SetCallbackHandler(&PrivateCallback);
@@ -213,7 +214,8 @@ namespace{
 	{
 		UZipOperation* ZipOperation = NewObject<UZipOperation>();
 
-		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, archivePath, destinationDirectory, format, ZipOperation] {
+		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, archivePath, destinationDirectory, format, ZipOperation] 
+		{
 			SevenZipCallbackHandler PrivateCallback;
 			PrivateCallback.progressDelegate = (UObject*)progressDelegate;
 			ZipOperation->SetCallbackHandler(&PrivateCallback);
@@ -221,7 +223,8 @@ namespace{
 			//UE_LOG(LogClass, Log, TEXT("path is: %s"), *path);
 			SevenZipExtractor extractor(SZLib, *archivePath);
 
-			if (format == COMPRESSION_FORMAT_UNKNOWN) {
+			if (format == COMPRESSION_FORMAT_UNKNOWN) 
+			{
 				if (!extractor.DetectCompressionFormat())
 				{
 					extractor.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
@@ -250,7 +253,8 @@ namespace{
 			PrivateCallback.progressDelegate = (UObject*)listDelegate;
 			SevenZipLister lister(SZLib, *path);
 
-			if (format == COMPRESSION_FORMAT_UNKNOWN) {
+			if (format == COMPRESSION_FORMAT_UNKNOWN) 
+			{
 				if (!lister.DetectCompressionFormat())
 				{
 					lister.SetCompressionFormat(SevenZip::CompressionFormat::Zip);
@@ -261,7 +265,19 @@ namespace{
 				lister.SetCompressionFormat(libZipFormatFromUEFormat(format));
 			}
 
-			lister.ListArchive(&PrivateCallback); //&PrivateCallback
+			if (!lister.ListArchive(&PrivateCallback))
+			{
+				// If ListArchive returned false, it was most likely because the compression format was unsupported
+				// Call OnDone with a failure message, make sure to call this on the game thread.
+				if (IZipUtilityInterface* ZipInterface = Cast<IZipUtilityInterface>((UObject*)listDelegate))
+				{
+					UE_LOG(LogClass, Warning, TEXT("ZipUtility: Unknown failure for list operation on %s"), *path);
+					UZipFileFunctionLibrary::RunLambdaOnGameThread([ZipInterface, listDelegate, path] 
+					{
+						ZipInterface->Execute_OnDone((UObject*)listDelegate, *path, EZipUtilityCompletionState::FAILURE_UNKNOWN);
+					});
+				}
+			}
 		});
 	}
 
@@ -269,7 +285,8 @@ namespace{
 	{
 		UZipOperation* ZipOperation = NewObject<UZipOperation>();
 
-		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, fileName, path, ueCompressionformat, ueCompressionlevel, directory, ZipOperation] {
+		IQueuedWork* Work = RunLambdaOnThreadPool([progressDelegate, fileName, path, ueCompressionformat, ueCompressionlevel, directory, ZipOperation] 
+		{
 			SevenZipCallbackHandler PrivateCallback;
 			PrivateCallback.progressDelegate = (UObject*)progressDelegate;
 			ZipOperation->SetCallbackHandler(&PrivateCallback);
@@ -395,7 +412,8 @@ UZipOperation* UZipFileFunctionLibrary::UnzipWithLambda(const FString& ArchivePa
 {
 	UZULambdaDelegate* LambdaDelegate = NewObject<UZULambdaDelegate>();
 	LambdaDelegate->AddToRoot();
-	LambdaDelegate->SetOnDoneCallback([LambdaDelegate, OnDoneCallback]() {
+	LambdaDelegate->SetOnDoneCallback([LambdaDelegate, OnDoneCallback]() 
+	{
 		OnDoneCallback();
 		LambdaDelegate->RemoveFromRoot();
 	});
@@ -428,7 +446,8 @@ UZipOperation* UZipFileFunctionLibrary::ZipWithLambda(const FString& ArchivePath
 {
 	UZULambdaDelegate* LambdaDelegate = NewObject<UZULambdaDelegate>();
 	LambdaDelegate->AddToRoot();
-	LambdaDelegate->SetOnDoneCallback([OnDoneCallback, LambdaDelegate]() {
+	LambdaDelegate->SetOnDoneCallback([OnDoneCallback, LambdaDelegate]() 
+	{
 		OnDoneCallback();
 		LambdaDelegate->RemoveFromRoot();
 	});
@@ -444,7 +463,9 @@ bool UZipFileFunctionLibrary::ListFilesInArchive(const FString& path, UObject* l
 
 	//Check directory validity
 	if (!isValidDirectory(directory, fileName, path))
+	{
 		return false;
+	}
 
 	ListOnBGThread(path, directory, listDelegate, format);
 	return true;
