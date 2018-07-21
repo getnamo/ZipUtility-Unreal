@@ -121,12 +121,10 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolder(const FString& FullPath, UO
 	const FWatcher* WatcherPtr = &FreshWatcher;
 
 	//fork this off to another process
-	WFULambdaRunnable* Runnable = WFULambdaRunnable::RunLambdaOnBackGroundThread([FullPath, WatcherDelegate, WatcherPtr]()
+	FreshWatcher.ThreadFuture = WFULambdaRunnable::RunLambdaOnBackGroundThread([FullPath, WatcherDelegate, WatcherPtr]()
 	{
 		 UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(FullPath, WatcherPtr);
 	});
-
-	FreshWatcher.Runnable = Runnable;
 
 	TArray<FWatcher>& PathWatchers = Watchers[FullPath];
 	PathWatchers.Add(FreshWatcher);
@@ -149,7 +147,7 @@ void UWindowsFileUtilityFunctionLibrary::StopWatchingFolder(const FString& FullP
 		{
 			//Stop the runnable
 			PathWatcher.ShouldRun = false;
-			PathWatcher.Runnable->Stop();
+			//PathWatcher.Runnable->Stop();
 
 			//Remove the watcher and we're done
 			PathWatchers.RemoveAt(i);
@@ -167,7 +165,7 @@ void UWindowsFileUtilityFunctionLibrary::ListContentsOfFolder(const FString& Ful
 		return;
 	}
 
-	WFULambdaRunnable* Runnable = WFULambdaRunnable::RunLambdaOnBackGroundThread([&FullPath, Delegate]()
+	WFULambdaRunnable::RunLambdaOnBackGroundThread([&FullPath, Delegate]()
 	{
 		WIN32_FIND_DATA ffd;
 		LARGE_INTEGER filesize;

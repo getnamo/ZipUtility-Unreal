@@ -10,8 +10,8 @@ struct FWatcher
 	
 	FString Path;
 
-	WFULambdaRunnable* Runnable = nullptr;
-
+	TSharedFuture<void> ThreadFuture = nullptr;
+	
 	FThreadSafeBool ShouldRun = true;
 	
 };
