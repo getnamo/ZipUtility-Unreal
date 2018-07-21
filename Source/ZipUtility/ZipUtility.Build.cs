@@ -16,7 +16,7 @@ public class ZipUtility : ModuleRules
 
 	private string ATLPath
 	{
-		get { return "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.13.26128/atlmfc"; }
+		get { return "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.14.26428/atlmfc"; }
 	}
 
     public ZipUtility(ReadOnlyTargetRules Target) : base(Target)
