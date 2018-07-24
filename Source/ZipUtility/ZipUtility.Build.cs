@@ -1,7 +1,9 @@
 // Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+using System;
 using System.IO;
+using Microsoft.Win32;
 
 public class ZipUtility : ModuleRules
 {
@@ -9,19 +11,68 @@ public class ZipUtility : ModuleRules
     {
         get { return Path.GetFullPath(Path.Combine(ModuleDirectory, "../../ThirdParty/")); }
     }
+
     private string SevenZppPath
     {
         get { return Path.GetFullPath(Path.Combine(ThirdPartyPath, "7zpp")); }
     }
 
-	private string ATLPath
-	{
-		get { return "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.14.26428/atlmfc"; }
-	}
+    private string VsDirectory
+    {
+        get
+        {
+            // Trying to find VS installation directory from registry
+            string regPath = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\SxS\VS7\", "15.0", "");
+            if (!string.IsNullOrEmpty(regPath))
+            {
+                Console.WriteLine("ZipUtility: Found VS path in registry: " + regPath);
+                return regPath;
+            }
+            else
+            {
+                // If failed - using the most common install path
+                string vsDefaultBasePath = @"C:\Program Files (x86)\Microsoft Visual Studio\2017";
+                string vsVersion = Directory.GetDirectories(vsDefaultBasePath)[0];
+                string vsPath = Path.Combine(vsDefaultBasePath, vsVersion);
+                Console.WriteLine("ZipUtility Warning: Using default VS path: " + vsPath);
+                return vsPath;
+            }
+        }
+    }
+
+    private string ATLPath
+    {
+        get
+        {
+            // Trying to find ATL path similar to:
+            // C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.14.26428/atlmfc
+            string atlPath = "";
+            try
+            {
+                var vsDir = VsDirectory;
+                if (!string.IsNullOrEmpty(vsDir))
+                {
+
+                    string msvcPath = Path.Combine(vsDir, @"VC\Tools\MSVC\");
+                    string msvcVersion = Directory.GetDirectories(msvcPath)[0];
+                    atlPath = Path.Combine(msvcPath, msvcVersion, "atlmfc");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ZipUtility Error: can't find VS path: " + ex.ToString());
+            }
+
+            if (!Directory.Exists(atlPath))
+            {
+                Console.WriteLine("ZipUtility Error: Couldn't find an ATLPath, fix it in ZipUtility.Build.cs");
+            }
+            return atlPath;
+        }
+    }
 
     public ZipUtility(ReadOnlyTargetRules Target) : base(Target)
     {
-
         PublicIncludePaths.AddRange(
             new string[] {
                 "ZipUtility/Public"
@@ -71,6 +122,7 @@ public class ZipUtility : ModuleRules
 
         LoadLib(Target);
     }
+
     public bool LoadLib(ReadOnlyTargetRules Target)
     {
         bool isLibrarySupported = false;
