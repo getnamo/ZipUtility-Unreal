@@ -88,7 +88,7 @@ public class ZipUtility : ModuleRules
             PublicLibraryPaths.Add(Path.Combine(LibrariesPath, PlatformSubPath));
 
             PublicDelayLoadDLLs.Add("7z.dll");
-            RuntimeDependencies.Add(new RuntimeDependency(Path.Combine(DLLPath, PlatformSubPath, "7z.dll")));
+            RuntimeDependencies.Add(Path.Combine(DLLPath, PlatformSubPath, "7z.dll"));
         }
 
         if (isLibrarySupported)
