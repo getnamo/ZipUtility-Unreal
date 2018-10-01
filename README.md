@@ -28,7 +28,7 @@ If you're recompiling for e.g. another engine build or packaging you will need t
 1. Open Visual Studio Installer -> ```Modify```.
 2. Click on the ```Individual components``` and scroll down to ```Visual C++ ATL for x86 and x64```.
 3. *(Optional)* It's probably a good idea to ensure you have ```Visual C++ MFC for x86 and x64``` included as well.
-4. The plugin should auto-detect your ATL include location and compile correctly.
+4. After installation has completed, the plugin should auto-detect your ATL include location and compile correctly.
 
 ## Blueprint Access
 
