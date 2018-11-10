@@ -1,7 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "WindowsFileUtilityPrivatePCH.h"
 #include "WFUFileListInterface.h"
+#include "WindowsFileUtilityPrivatePCH.h"
 
 
 UWFUFileListInterface::UWFUFileListInterface(const class FObjectInitializer& PCIP)

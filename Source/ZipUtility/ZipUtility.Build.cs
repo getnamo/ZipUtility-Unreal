@@ -73,7 +73,11 @@ public class ZipUtility : ModuleRules
 
     public ZipUtility(ReadOnlyTargetRules Target) : base(Target)
     {
-        PublicIncludePaths.AddRange(
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		PrivatePCHHeaderFile = "Private/ZipUtilityPrivatePCH.h";
+
+
+		PublicIncludePaths.AddRange(
             new string[] {
                 "ZipUtility/Public"
 				// ... add public include paths required here ...

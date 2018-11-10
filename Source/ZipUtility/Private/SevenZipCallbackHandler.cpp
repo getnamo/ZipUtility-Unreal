@@ -1,6 +1,6 @@
+#include "SevenZipCallbackHandler.h"
 #include "ZipUtilityPrivatePCH.h"
 #include "ZipFileFunctionLibrary.h"
-#include "SevenZipCallbackHandler.h"
 
 void SevenZipCallbackHandler::OnProgress(const TString& archivePath, uint64 bytes)
 {

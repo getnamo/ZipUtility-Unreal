@@ -1,7 +1,7 @@
 
+#include "WFUFileListLambdaDelegate.h"
 #include "WindowsFileUtilityPrivatePCH.h"
 #include "WindowsFileUtilityFunctionLibrary.h"
-#include "WFUFileListLambdaDelegate.h"
 
 UWFUFileListLambdaDelegate::UWFUFileListLambdaDelegate()
 {

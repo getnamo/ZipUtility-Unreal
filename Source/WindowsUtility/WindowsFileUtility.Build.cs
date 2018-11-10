@@ -7,7 +7,10 @@ public class WindowsFileUtility : ModuleRules
 {
     public WindowsFileUtility(ReadOnlyTargetRules Target) : base(Target)
     {
-        PublicIncludePaths.AddRange(
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		PrivatePCHHeaderFile = "Private/WindowsFileUtilityPrivatePCH.h";
+
+		PublicIncludePaths.AddRange(
             new string[] {
                 "WindowsFileUtility/Public"
 				// ... add public include paths required here ...

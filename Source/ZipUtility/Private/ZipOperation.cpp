@@ -1,7 +1,7 @@
+#include "ZipOperation.h"
 #include "ZipUtilityPrivatePCH.h"
 #include "SevenZipCallbackHandler.h"
 #include "WFULambdaRunnable.h"
-#include "ZipOperation.h"
 
 UZipOperation::UZipOperation()
 {

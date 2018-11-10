@@ -1,7 +1,7 @@
 #pragma once
 
-#include "WindowsFileUtilityPrivatePCH.h"
 #include "WFULambdaRunnable.h"
+#include "WindowsFileUtilityPrivatePCH.h"
 
 uint64 WFULambdaRunnable::ThreadNumber = 0;
 
