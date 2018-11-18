@@ -79,14 +79,14 @@ public class ZipUtility : ModuleRules
 
 		PublicIncludePaths.AddRange(
             new string[] {
-                "ZipUtility/Public"
+				Path.Combine(ModuleDirectory, "Public"),
 				// ... add public include paths required here ...
 			}
             );
 
         PrivateIncludePaths.AddRange(
             new string[] {
-                "ZipUtility/Private",
+				Path.Combine(ModuleDirectory, "Private"),
                 Path.Combine(SevenZppPath, "Include"),
 				Path.Combine(ATLPath, "include"),
 				// ... add other private include paths required here ...

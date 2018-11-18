@@ -12,14 +12,14 @@ public class WindowsFileUtility : ModuleRules
 
 		PublicIncludePaths.AddRange(
             new string[] {
-                "WindowsFileUtility/Public"
+				Path.Combine(ModuleDirectory, "Public"),
 				// ... add public include paths required here ...
 			}
             );
 
         PrivateIncludePaths.AddRange(
             new string[] {
-                "WindowsFileUtility/Private",
+				Path.Combine(ModuleDirectory, "Private"),
 				// ... add other private include paths required here ...
 			}
             );
