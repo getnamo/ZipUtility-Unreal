@@ -47,7 +47,8 @@ namespace{
 
 	FString DLLPath()
 	{
-#if _WIN64
+
+#if defined(_WIN64)
 
 		FString PlatformString = FString(TEXT("Win64"));
 #else
