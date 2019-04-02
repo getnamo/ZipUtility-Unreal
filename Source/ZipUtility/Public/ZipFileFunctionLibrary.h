@@ -5,7 +5,7 @@
 #include "ZipFileFunctionLibrary.generated.h"
 
 UENUM(BlueprintType)
-enum ZipUtilityCompressionFormat
+enum class EZipUtilityCompressionFormat : uint8
 {
 	COMPRESSION_FORMAT_UNKNOWN,
 	COMPRESSION_FORMAT_SEVEN_ZIP,
@@ -49,52 +49,52 @@ public:
 	
 	/* Unzips file in archive containing Name via ListFilesInArchive/UnzipFiles. Automatically determines compression if unknown. Calls ZipUtilityInterface progress events. */
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
-	static bool UnzipFileNamed(const FString& archivePath, const FString& Name, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat format = COMPRESSION_FORMAT_UNKNOWN);
+	static bool UnzipFileNamed(const FString& archivePath, const FString& Name, UObject* ZipUtilityInterfaceDelegate, EZipUtilityCompressionFormat format = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
 	
 	/* Unzips file in archive containing Name at destination path via ListFilesInArchive/UnzipFilesTo. Automatically determines compression if unknown. Calls ZipUtilityInterface progress events. */
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
-	static bool UnzipFileNamedTo(const FString& archivePath, const FString& Name, const FString& destinationPath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat format = COMPRESSION_FORMAT_UNKNOWN);
+	static bool UnzipFileNamedTo(const FString& archivePath, const FString& Name, const FString& destinationPath, UObject* ZipUtilityInterfaceDelegate, EZipUtilityCompressionFormat format = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
 
 	/* Unzips the given file indexes in archive at destination path. Automatically determines compression if unknown. Calls ZipUtilityInterface progress events. */
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
-	static UZipOperation* UnzipFilesTo(const TArray<int32> fileIndices, const FString& archivePath, const FString& destinationPath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat format = COMPRESSION_FORMAT_UNKNOWN);
+	static UZipOperation* UnzipFilesTo(const TArray<int32> fileIndices, const FString& archivePath, const FString& destinationPath, UObject* ZipUtilityInterfaceDelegate, EZipUtilityCompressionFormat format = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
 
 	/* Unzips the given file indexes in archive at current path. Automatically determines compression if unknown. Calls ZipUtilityInterface progress events. */
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
-	static UZipOperation* UnzipFiles(const TArray<int32> fileIndices, const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat format = COMPRESSION_FORMAT_UNKNOWN);
+	static UZipOperation* UnzipFiles(const TArray<int32> fileIndices, const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, EZipUtilityCompressionFormat format = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
 
 	/* Unzips archive at current path. Automatically determines compression if unknown. Calls ZipUtilityInterface progress events. */
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
-	static UZipOperation* Unzip(const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat Format = COMPRESSION_FORMAT_UNKNOWN);
+	static UZipOperation* Unzip(const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, EZipUtilityCompressionFormat Format = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
 
 	/* Lambda C++ simple variant*/
 	static UZipOperation* UnzipWithLambda(	const FString& ArchivePath,
 									TFunction<void()> OnDoneCallback,
 									TFunction<void(float)> OnProgressCallback = nullptr,
-									ZipUtilityCompressionFormat format = COMPRESSION_FORMAT_UNKNOWN);
+									EZipUtilityCompressionFormat format = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
 
 	/* Unzips archive at destination path. Automatically determines compression if unknown. Calls ZipUtilityInterface progress events. */
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
-	static UZipOperation* UnzipTo(const FString& ArchivePath, const FString& DestinationPath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat format = COMPRESSION_FORMAT_UNKNOWN);
+	static UZipOperation* UnzipTo(const FString& ArchivePath, const FString& DestinationPath, UObject* ZipUtilityInterfaceDelegate, EZipUtilityCompressionFormat format = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
 
 	/* Compresses the file or folder given at path and places the file in the same root folder. Calls ZipUtilityInterface progress events. Not all formats are supported for compression.*/
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
 	static UZipOperation* Zip(	const FString& FileOrFolderPath,
 						UObject* ZipUtilityInterfaceDelegate, 
-						ZipUtilityCompressionFormat Format = COMPRESSION_FORMAT_SEVEN_ZIP, 
+						EZipUtilityCompressionFormat Format = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_SEVEN_ZIP,
 						TEnumAsByte<ZipUtilityCompressionLevel> Level = COMPRESSION_LEVEL_NORMAL);
 
 	/* Lambda C++ simple variant*/
 	static UZipOperation* ZipWithLambda(	const FString& ArchivePath,
 								TFunction<void()> OnDoneCallback,
 								TFunction<void(float)> OnProgressCallback = nullptr,
-								ZipUtilityCompressionFormat Format = COMPRESSION_FORMAT_UNKNOWN,
+								EZipUtilityCompressionFormat Format = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN,
 								TEnumAsByte<ZipUtilityCompressionLevel> Level = COMPRESSION_LEVEL_NORMAL);
 
 
 	/*Queries Archive content list, calls ZipUtilityInterface list events (OnFileFound)*/
 	UFUNCTION(BlueprintCallable, Category = ZipUtility)
-	static bool ListFilesInArchive(const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, ZipUtilityCompressionFormat format = COMPRESSION_FORMAT_UNKNOWN);
+	static bool ListFilesInArchive(const FString& ArchivePath, UObject* ZipUtilityInterfaceDelegate, EZipUtilityCompressionFormat format = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
 
 	static FGraphEventRef RunLambdaOnGameThread(TFunction< void()> InFunction);
 };

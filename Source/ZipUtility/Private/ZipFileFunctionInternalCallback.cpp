@@ -3,7 +3,7 @@
 
 UZipFileFunctionInternalCallback::UZipFileFunctionInternalCallback()
 {
-	CompressionFormat = ZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN;
+	CompressionFormat = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN;
 	DestinationFolder = FString();
 	File = FString();
 	FileIndex = 0;
@@ -34,7 +34,7 @@ void UZipFileFunctionInternalCallback::OnFileFound_Implementation(const FString&
 	FileIndex++;
 }
 
-void UZipFileFunctionInternalCallback::SetCallback(const FString& FileName, UObject* CallbackIn, TEnumAsByte<ZipUtilityCompressionFormat> CompressionFormatIn /*= ZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN*/)
+void UZipFileFunctionInternalCallback::SetCallback(const FString& FileName, UObject* CallbackIn, EZipUtilityCompressionFormat CompressionFormatIn /*= ZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN*/)
 {
 	File = FileName;
 	Callback = CallbackIn;
@@ -42,7 +42,7 @@ void UZipFileFunctionInternalCallback::SetCallback(const FString& FileName, UObj
 	FileIndex = 0;
 }
 
-void UZipFileFunctionInternalCallback::SetCallback(const FString& FileName, const FString& DestinationFolderIn, UObject* CallbackIn, TEnumAsByte<ZipUtilityCompressionFormat> CompressionFormatIn /*= ZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN*/)
+void UZipFileFunctionInternalCallback::SetCallback(const FString& FileName, const FString& DestinationFolderIn, UObject* CallbackIn, EZipUtilityCompressionFormat CompressionFormatIn /*= ZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN*/)
 {
 	SetCallback(FileName, CallbackIn, CompressionFormatIn);
 

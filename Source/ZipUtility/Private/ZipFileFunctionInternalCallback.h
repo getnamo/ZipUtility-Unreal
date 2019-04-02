@@ -15,7 +15,7 @@ private:
 
 	/** Compression format used to unzip */
 	UPROPERTY(Transient)
-	TEnumAsByte<ZipUtilityCompressionFormat> CompressionFormat;
+	EZipUtilityCompressionFormat CompressionFormat;
 
 	/** Path of the file */
 	UPROPERTY(Transient)
@@ -57,8 +57,8 @@ public:
 
 	virtual void OnFileFound_Implementation(const FString& archive, const FString& fileIn, int32 size) override;
 
-	void SetCallback(const FString& FileName, UObject* CallbackIn, TEnumAsByte<ZipUtilityCompressionFormat> CompressionFormatIn = ZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
-	void SetCallback(const FString& FileName, const FString& DestinationFolder, UObject* CallbackIn, TEnumAsByte<ZipUtilityCompressionFormat> CompressionFormatIn = ZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
+	void SetCallback(const FString& FileName, UObject* CallbackIn, EZipUtilityCompressionFormat CompressionFormatIn = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
+	void SetCallback(const FString& FileName, const FString& DestinationFolder, UObject* CallbackIn, EZipUtilityCompressionFormat CompressionFormatIn = EZipUtilityCompressionFormat::COMPRESSION_FORMAT_UNKNOWN);
 
 	FORCEINLINE bool GetSingleFile() const { return bSingleFile; }
 	FORCEINLINE void SetSingleFile(bool val) { bSingleFile = val; }
