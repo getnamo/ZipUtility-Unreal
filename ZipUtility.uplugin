@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "0.10.0",
+	"VersionName": "0.11.0",
 	"FriendlyName": "ZipUtility",
 	"Description": "",
 	"Category": "Utility",
@@ -18,8 +18,7 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [
-				"Win64",
-				"Win32"
+				"Win64"
 			]
 		}
 	]

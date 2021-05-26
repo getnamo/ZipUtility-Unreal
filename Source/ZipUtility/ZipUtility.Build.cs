@@ -144,11 +144,11 @@ public class ZipUtility : ModuleRules
     {
         bool isLibrarySupported = false;
 
-        if ((Target.Platform == UnrealTargetPlatform.Win64) || (Target.Platform == UnrealTargetPlatform.Win32))
+        if (Target.Platform == UnrealTargetPlatform.Win64)
         {
             isLibrarySupported = true;
 
-            string PlatformSubPath = (Target.Platform == UnrealTargetPlatform.Win64) ? "Win64" : "Win32";
+            string PlatformSubPath = "Win64";
             string LibrariesPath = Path.Combine(SevenZppPath, "Lib");
             string DLLPath = Path.Combine(SevenZppPath, "dll");
 
