@@ -21,34 +21,21 @@ public class ZipUtility : ModuleRules
     {
         get
         {
-	//try find vswhere this will must be instaled with VS>2017 by the defeault
-            string user_system_path = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-            string vswhere_path = @"\Microsoft Visual Studio\Installer\vswhere.exe";
-            string vsw_result;
-	    
-            Process p = new Process();
-            p.StartInfo.FileName = Path.Combine(user_system_path + vswhere_path);
-            p.StartInfo.Arguments = "-legacy -prerelease -format text";
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.CreateNoWindow = true;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.Start();
-
-            vsw_result = p.StandardOutput.ReadToEnd();
-            p.WaitForExit();
-            //its bad, but anyway split right path for VS
-            vsw_result = vsw_result.Replace("\r", "").Split("\n".ToCharArray())[6];
-            vsw_result = vsw_result.Remove(0,18);
-
-            if (!string.IsNullOrEmpty(vsw_result))
+            // Trying to find VS installation directory from registry
+            string regPath = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\SxS\VS7\", "15.0", "");
+            if (!string.IsNullOrEmpty(regPath))
             {
-                Console.WriteLine("ZipUtility: Found VS path in registry:" + vsw_result);
-                return vsw_result;
+                Console.WriteLine("ZipUtility: Found VS path in registry: " + regPath);
+                return regPath;
             }
             else
             {
-                Console.WriteLine("ZipUtility Error: vswhere can't find. Do manualy path to VS");
-                return vsw_result;
+                // If failed - using the most common install path
+                string vsDefaultBasePath = @"C:\Program Files (x86)\Microsoft Visual Studio\2019";
+                string vsVersion = Directory.GetDirectories(vsDefaultBasePath)[0];
+                string vsPath = Path.Combine(vsDefaultBasePath, vsVersion);
+                Console.WriteLine("ZipUtility Warning: Using default VS path: " + vsPath);
+                return vsPath;
             }
         }
     }
@@ -58,7 +45,7 @@ public class ZipUtility : ModuleRules
         get
         {
             // Trying to find ATL path similar to:
-            // C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.14.26428/atlmfc
+            // C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.14.26428/atlmfc
             string atlPath = "";
             try
             {
