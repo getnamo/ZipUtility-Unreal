@@ -1,9 +1,9 @@
 # ZipUtility Plugin
 
-[![GitHub release](https://img.shields.io/github/release/getnamo/ziputility-ue4.svg)](https://github.com/getnamo/ziputility-ue4/releases)
-[![Github All Releases](https://img.shields.io/github/downloads/getnamo/ziputility-ue4/total.svg)](https://github.com/getnamo/ziputility-ue4/releases)
+[![GitHub release](https://img.shields.io/github/release/getnamo/ZipUtility-Unreal.svg)](https://github.com/getnamo/ZipUtility-Unreal/releases)
+[![Github All Releases](https://img.shields.io/github/downloads/getnamo/ZipUtility-Unreal/total.svg)](https://github.com/getnamo/ZipUtility-Unreal/releases)
 
-Event driven, blueprint accessible flexible 7zip compression, archiver, and file manipulation plugin for Unreal Engine 4. Built on [7zip-cpp](https://github.com/getnamo/7zip-cpp) modernization of the [SevenZip++](http://bitbucket.org/cmcnab/sevenzip/wiki/Home) C++ wrapper for accessing the 7-zip COM-like API in 7z.dll and 7za.dll.
+Event driven, blueprint accessible flexible 7zip compression, archiver, and file manipulation plugin for the Unreal Engine. Built on [7zip-cpp](https://github.com/getnamo/7zip-cpp) modernization of the [SevenZip++](http://bitbucket.org/cmcnab/sevenzip/wiki/Home) C++ wrapper for accessing the 7-zip COM-like API in 7z.dll and 7za.dll.
 
 Supports the following compression algorithms:
 7Zip, GZip, BZip2, RAR, TAR, ISO, CAB, LZMA, LZMA86.
@@ -16,7 +16,7 @@ Plugin works in Windows only.
 
 ## Quick Install & Setup ##
 
- 1.	[Download](https://github.com/getnamo/ZipUtility-ue4/releases)
+ 1.	[Download](https://github.com/getnamo/ZipUtility-Unreal/releases)
  2.	Create new or choose project.
  3.	Browse to your project folder (typically found at Documents/Unreal Project/{Your Project Root})
  4.	Copy *Plugins* folder into your Project root.
@@ -143,7 +143,7 @@ then ```#include "ZipFileFunctionLibrary.h"``` in the places where you'd like to
 
 ### [Lambda](http://en.cppreference.com/w/cpp/language/lambda)
 
-#### [UnzipWithLambda](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h#L63)
+#### [UnzipWithLambda](https://github.com/getnamo/ZipUtility-Unreal/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h#L63)
 
 call the static function with *done* and *progress* callback lambdas e.g. if you're interested in both
 
@@ -161,7 +161,7 @@ UZipFileFunctionLibrary::UnzipWithLambda(FString("C:/path/to/your/zip.7z"),
 
 replace either with nullptr if you're not interested in that callback
 
-#### [ZipWithLambda](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h#L80)
+#### [ZipWithLambda](https://github.com/getnamo/ZipUtility-Unreal/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h#L80)
 
 call the static function with *done* and *progress* callback lambdas e.g. if you're interested in both
 
@@ -179,7 +179,7 @@ UZipFileFunctionLibrary::ZipWithLambda(FString("C:/path/to/your/zip.7z"),
 
 replace either with nullptr if you're not interested in that callback
 
-### Your own class with [IZipUtilityInterface](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Public/ZipUtilityInterface.h)
+### Your own class with [IZipUtilityInterface](https://github.com/getnamo/ZipUtility-Unreal/blob/master/Source/ZipUtility/Public/ZipUtilityInterface.h)
 
 Let's say you have a class called `UMyClass`. You then add the `IZipUtilityInterface` to it via multiple inheritance e.g.
 
@@ -229,14 +229,14 @@ then to e.g. unzip you pass the pointer to your class with the `IZipUtilityInter
 UZipFileFunctionLibrary::Unzip(FString("C:/path/to/your/zip.7z"), MyZipClass);
 ```
 
-See [ZipFileFunctionLibrary.h](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h) for all the function signatures.
+See [ZipFileFunctionLibrary.h](https://github.com/getnamo/ZipUtility-Unreal/blob/master/Source/ZipUtility/Public/ZipFileFunctionLibrary.h) for all the function signatures.
 
-See [ZULambdaDelegate.h](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/ZipUtility/Private/ZULambdaDelegate.h) for an example class using the above setup to convert `IZipUtilityInterface` interface calls into lambda functions.
+See [ZULambdaDelegate.h](https://github.com/getnamo/ZipUtility-Unreal/blob/master/Source/ZipUtility/Private/ZULambdaDelegate.h) for an example class using the above setup to convert `IZipUtilityInterface` interface calls into lambda functions.
 
 
 ### Windows Utility
 
-For windows utility functions, the callback setup is similar, kindly refer to [WindowsFileUtilityFunctionLibrary.h](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/WindowsUtility/Public/WindowsFileUtilityFunctionLibrary.h) which may use [IWFUFileListInterface](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/WindowsUtility/Public/WFUFileListInterface.h) or [IWFUFolderWatchInterface](https://github.com/getnamo/ZipUtility-ue4/blob/master/Source/WindowsUtility/Public/WFUFolderWatchInterface.h) depending on functions used.
+For windows utility functions, the callback setup is similar, kindly refer to [WindowsFileUtilityFunctionLibrary.h](https://github.com/getnamo/ZipUtility-Unreal/blob/master/Source/WindowsUtility/Public/WindowsFileUtilityFunctionLibrary.h) which may use [IWFUFileListInterface](https://github.com/getnamo/ZipUtility-Unreal/blob/master/Source/WindowsUtility/Public/WFUFileListInterface.h) or [IWFUFolderWatchInterface](https://github.com/getnamo/ZipUtility-Unreal/blob/master/Source/WindowsUtility/Public/WFUFolderWatchInterface.h) depending on functions used.
 
 ## License
 
@@ -247,7 +247,7 @@ LGPL for 7za.dll, LGPL + Unrar for 7z.dll
 See license file for details.
 
 ## Help
-Add any issues you run across to https://github.com/getnamo/ZipUtility-ue4/issues
+Add any issues you run across to https://github.com/getnamo/ZipUtility-Unreal/issues
 
 or post to the [unreal forum thread](https://forums.unrealengine.com/showthread.php?95022-Plugin-ZipUtility-(7zip)).
 
