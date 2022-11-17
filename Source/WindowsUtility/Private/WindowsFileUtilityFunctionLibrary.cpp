@@ -15,7 +15,7 @@ UWindowsFileUtilityFunctionLibrary::UWindowsFileUtilityFunctionLibrary(const cla
 
 #if PLATFORM_WINDOWS
 
-#include "AllowWindowsPlatformTypes.h"
+#include "Windows/AllowWindowsPlatformTypes.h"
 #include <shellapi.h>
 #include <Shlwapi.h>
 
@@ -408,6 +408,6 @@ void UWindowsFileUtilityFunctionLibrary::WatchFolderOnBgThread(const FString& Fu
 	UE_LOG(LogTemp, Log, TEXT("\n Watcher loop stopped, total now: %d.\n"), TotalWatchers);
 }
 
-#include "HideWindowsPlatformTypes.h"
+#include "Windows/HideWindowsPlatformTypes.h"
 
 #endif

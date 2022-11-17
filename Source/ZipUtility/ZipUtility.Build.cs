@@ -21,22 +21,13 @@ public class ZipUtility : ModuleRules
     {
         get
         {
-            // Trying to find VS installation directory from registry
-            string regPath = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\SxS\VS7\", "15.0", "");
-            if (!string.IsNullOrEmpty(regPath))
-            {
-                Console.WriteLine("ZipUtility: Found VS path in registry: " + regPath);
-                return regPath;
-            }
-            else
-            {
-                // If failed - using the most common install path
-                string vsDefaultBasePath = @"C:\Program Files (x86)\Microsoft Visual Studio\2019";
-                string vsVersion = Directory.GetDirectories(vsDefaultBasePath)[0];
-                string vsPath = Path.Combine(vsDefaultBasePath, vsVersion);
-                Console.WriteLine("ZipUtility Warning: Using default VS path: " + vsPath);
-                return vsPath;
-            }
+            //Registry variant of fetch doesn't work since 2017
+            // If failed - using the most common install path
+            string vsDefaultBasePath = @"C:\Program Files (x86)\Microsoft Visual Studio\2019";
+            string vsVersion = "Community"; //Directory.GetDirectories(vsDefaultBasePath)[0];
+            string vsPath = Path.Combine(vsDefaultBasePath, vsVersion);
+            Console.WriteLine("ZipUtility Info: Using default VS path: " + vsPath);
+            return vsPath;
         }
     }
 
@@ -54,8 +45,19 @@ public class ZipUtility : ModuleRules
                 {
 
                     string msvcPath = Path.Combine(vsDir, @"VC\Tools\MSVC\");
-                    string msvcVersion = Directory.GetDirectories(msvcPath)[0];
-                    atlPath = Path.Combine(msvcPath, msvcVersion, "atlmfc");
+                    var directories = Directory.GetDirectories(msvcPath);
+
+                    //Directory.GetDirectories(msvcPath)
+                    
+                    foreach (string msvcVersion in directories)
+                    {
+                        atlPath = Path.Combine(msvcPath, msvcVersion, "atlmfc");
+                        if (Directory.Exists(atlPath))
+                        {
+                            break;
+                        }
+                    }
+                    
                 }
             }
             catch (Exception ex)
@@ -67,6 +69,7 @@ public class ZipUtility : ModuleRules
             {
                 Console.WriteLine("ZipUtility Error: Couldn't find an ATLPath, fix it in ZipUtility.Build.cs");
             }
+            Console.WriteLine("ZipUtility Info: Using ATL path " + atlPath);
             return atlPath;
         }
     }

@@ -4,7 +4,7 @@
 #include "ZipFileFunctionInternalCallback.h"
 #include "ListCallback.h"
 #include "ProgressCallback.h"
-#include "IPluginManager.h"
+#include "Interfaces/IPluginManager.h"
 #include "WFULambdaRunnable.h"
 #include "ZULambdaDelegate.h"
 #include "SevenZipCallbackHandler.h"
