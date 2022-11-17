@@ -374,7 +374,7 @@ bool UZipFileFunctionLibrary::UnzipFileNamedTo(const FString& archivePath, const
 
 UZipOperation* UZipFileFunctionLibrary::UnzipFilesTo(const TArray<int32> fileIndices, const FString & archivePath, const FString & destinationPath, UObject * ZipUtilityInterfaceDelegate, EZipUtilityCompressionFormat format)
 {
-	bool bObjectIsValid = ZipUtilityInterfaceDelegate->GetClass()->ImplementsInterface(UZipUtilityInterface::StaticClass());
+	bool bObjectIsValid = ZipUtilityInterfaceDelegate && ZipUtilityInterfaceDelegate->GetClass()->ImplementsInterface(UZipUtilityInterface::StaticClass());
 
 	if (!bObjectIsValid)
 	{
@@ -413,7 +413,7 @@ UZipOperation* UZipFileFunctionLibrary::Unzip(const FString& ArchivePath, UObjec
 	//Check Directory validity
 	if (!IsValidDirectory(Directory, FileName, ArchivePath) || !UWindowsFileUtilityFunctionLibrary::DoesFileExist(ArchivePath))
 	{
-		bool bObjectIsValid = ZipUtilityInterfaceDelegate->GetClass()->ImplementsInterface(UZipUtilityInterface::StaticClass());
+		bool bObjectIsValid = ZipUtilityInterfaceDelegate && ZipUtilityInterfaceDelegate->GetClass()->ImplementsInterface(UZipUtilityInterface::StaticClass());
 
 		if (!bObjectIsValid)
 		{
@@ -453,7 +453,8 @@ UZipOperation* UZipFileFunctionLibrary::Zip(const FString& ArchivePath, UObject*
 	FString Directory;
 	FString FileName;
 
-	bool bObjectIsValid = ZipUtilityInterfaceDelegate->GetClass()->ImplementsInterface(UZipUtilityInterface::StaticClass());
+
+	bool bObjectIsValid = ZipUtilityInterfaceDelegate && ZipUtilityInterfaceDelegate->GetClass()->ImplementsInterface(UZipUtilityInterface::StaticClass());
 
 	if (!bObjectIsValid)
 	{
