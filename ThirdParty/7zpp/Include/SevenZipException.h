@@ -27,4 +27,4 @@ namespace SevenZip
 	};
 }
 
-#include "HideWindowsPlatformTypes.h"
+#include "Windows/HideWindowsPlatformTypes.h"
