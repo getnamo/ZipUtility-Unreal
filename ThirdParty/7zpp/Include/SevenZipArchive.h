@@ -1,6 +1,18 @@
 #pragma once
-
 #include "SevenZipLibrary.h"
+
+// Forward declare GetCommandLine to fix ATL compilation issue
+extern "C" {
+    __declspec(dllimport) LPWSTR __stdcall GetCommandLineW(void);
+    __declspec(dllimport) LPSTR __stdcall GetCommandLineA(void);
+}
+
+#ifdef UNICODE
+#define GetCommandLine GetCommandLineW
+#else
+#define GetCommandLine GetCommandLineA
+#endif
+
 #include <atlbase.h>
 #include "FileInfo.h"
 #include "CompressionFormat.h"

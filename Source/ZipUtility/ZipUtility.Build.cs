@@ -21,13 +21,26 @@ public class ZipUtility : ModuleRules
     {
         get
         {
-            //Registry variant of fetch doesn't work since 2017
-            // If failed - using the most common install path
-            string vsDefaultBasePath = @"C:\Program Files (x86)\Microsoft Visual Studio\2019";
-            string vsVersion = "Community"; //Directory.GetDirectories(vsDefaultBasePath)[0];
-            string vsPath = Path.Combine(vsDefaultBasePath, vsVersion);
-            Console.WriteLine("ZipUtility Info: Using default VS path: " + vsPath);
-            return vsPath;
+            // Try to find Visual Studio 2022 first, then fall back to 2019
+            string[] vsPaths = {
+                @"E:\Program Files\Microsoft Visual Studio\2022\Community",
+                @"C:\Program Files\Microsoft Visual Studio\2022\Community",
+                @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community"
+            };
+
+            foreach (string vsPath in vsPaths)
+            {
+                if (Directory.Exists(vsPath))
+                {
+                    Console.WriteLine("ZipUtility Info: Using VS path: " + vsPath);
+                    return vsPath;
+                }
+            }
+
+            // If none found, use the default 2022 path
+            string defaultPath = @"E:\Program Files\Microsoft Visual Studio\2022\Community";
+            Console.WriteLine("ZipUtility Info: Using default VS path: " + defaultPath);
+            return defaultPath;
         }
     }
 
@@ -36,28 +49,32 @@ public class ZipUtility : ModuleRules
         get
         {
             // Trying to find ATL path similar to:
-            // C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.14.26428/atlmfc
+            // E:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.38.33130/atlmfc
             string atlPath = "";
             try
             {
                 var vsDir = VsDirectory;
                 if (!string.IsNullOrEmpty(vsDir))
                 {
-
                     string msvcPath = Path.Combine(vsDir, @"VC\Tools\MSVC\");
-                    var directories = Directory.GetDirectories(msvcPath);
-
-                    //Directory.GetDirectories(msvcPath)
-                    
-                    foreach (string msvcVersion in directories)
+                    if (Directory.Exists(msvcPath))
                     {
-                        atlPath = Path.Combine(msvcPath, msvcVersion, "atlmfc");
-                        if (Directory.Exists(atlPath))
+                        var directories = Directory.GetDirectories(msvcPath);
+
+                        // Sort directories to get the latest version
+                        Array.Sort(directories);
+                        Array.Reverse(directories);
+
+                        foreach (string msvcVersionDir in directories)
                         {
-                            break;
+                            string testAtlPath = Path.Combine(msvcVersionDir, "atlmfc");
+                            if (Directory.Exists(testAtlPath))
+                            {
+                                atlPath = testAtlPath;
+                                break;
+                            }
                         }
                     }
-                    
                 }
             }
             catch (Exception ex)
@@ -67,9 +84,13 @@ public class ZipUtility : ModuleRules
 
             if (!Directory.Exists(atlPath))
             {
-                Console.WriteLine("ZipUtility Error: Couldn't find an ATLPath, fix it in ZipUtility.Build.cs");
+                Console.WriteLine("ZipUtility Warning: Couldn't find an ATLPath, using empty path");
+                atlPath = "";
             }
-            Console.WriteLine("ZipUtility Info: Using ATL path " + atlPath);
+            else
+            {
+                Console.WriteLine("ZipUtility Info: Using ATL path " + atlPath);
+            }
             return atlPath;
         }
     }
@@ -91,10 +112,16 @@ public class ZipUtility : ModuleRules
             new string[] {
 				Path.Combine(ModuleDirectory, "Private"),
                 Path.Combine(SevenZppPath, "Include"),
-				Path.Combine(ATLPath, "include"),
 				// ... add other private include paths required here ...
 			}
             );
+
+        // Add ATL include path only if it exists
+        string atlPath = ATLPath;
+        if (!string.IsNullOrEmpty(atlPath) && Directory.Exists(atlPath))
+        {
+            PrivateIncludePaths.Add(Path.Combine(atlPath, "include"));
+        }
 
 
         PublicDependencyModuleNames.AddRange(
@@ -126,6 +153,13 @@ public class ZipUtility : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
             );
+
+        // Add preprocessor definitions to help with Windows API compatibility
+        PublicDefinitions.AddRange(new string[] {
+            "WIN32_LEAN_AND_MEAN=1",
+            "NOMINMAX=1",
+            "_WIN32_WINNT=0x0601"  // Windows 7 or later
+        });
 
         LoadLib(Target);
     }

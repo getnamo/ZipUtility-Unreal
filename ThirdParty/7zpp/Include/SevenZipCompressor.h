@@ -1,7 +1,19 @@
 #pragma once
 
-
 #include <vector>
+
+// Forward declare GetCommandLine to fix ATL compilation issue
+extern "C" {
+    __declspec(dllimport) LPWSTR __stdcall GetCommandLineW(void);
+    __declspec(dllimport) LPSTR __stdcall GetCommandLineA(void);
+}
+
+#ifdef UNICODE
+#define GetCommandLine GetCommandLineW
+#else
+#define GetCommandLine GetCommandLineA
+#endif
+
 #include <atlbase.h>
 #include "SevenZipLibrary.h"
 #include "SevenZipArchive.h"
@@ -9,7 +21,6 @@
 #include "CompressionFormat.h"
 #include "CompressionLevel.h"
 #include "ProgressCallback.h"
-
 
 namespace SevenZip
 {
@@ -33,9 +44,9 @@ namespace SevenZip
 		virtual bool CompressFile( const TString& filePath, ProgressCallback* callback);
 
 	private:
-		TString m_outputPath;					//the final compression result compression path. Used for tracking in callbacks
+		TString m_outputPath;									//the final compression result compression path. Used for tracking in callbacks
 		CComPtr< IStream > OpenArchiveStream();
-		bool FindAndCompressFiles(	const TString& directory, const TString& searchPattern, 
+		bool FindAndCompressFiles(	const TString& directory, const TString& searchPattern,
 									const TString& pathPrefix, bool recursion, ProgressCallback* callback);
 		bool CompressFilesToArchive(const TString& pathPrefix, const std::vector< intl::FilePathInfo >& filePaths, ProgressCallback* callback);
 		bool SetCompressionProperties( IUnknown* outArchive );

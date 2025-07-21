@@ -13,12 +13,12 @@ class ZIPUTILITY_API SevenZipCallbackHandler : public ListCallback, public Progr
 {
 public:
 	
-	virtual void OnProgress(const TString& archivePath, uint64 bytes) override;
-	virtual void OnDone(const TString& archivePath) override;
-	virtual void OnFileDone(const TString& archivePath, const TString& filePath, uint64 bytes) override;
-	virtual void OnStartWithTotal(const TString& archivePath, unsigned __int64 totalBytes) override;
-	virtual void OnFileFound(const TString& archivePath, const TString& filePath, int size) override;
-	virtual void OnListingDone(const TString& archivePath) override;
+	virtual void OnProgress(const SevenZip::TString& archivePath, unsigned __int64 bytes) override;
+	virtual void OnDone(const SevenZip::TString& archivePath) override;
+	virtual void OnFileDone(const SevenZip::TString& archivePath, const SevenZip::TString& filePath, unsigned __int64 bytes) override;
+	virtual void OnStartWithTotal(const SevenZip::TString& archivePath, unsigned __int64 totalBytes) override;
+	virtual void OnFileFound(const SevenZip::TString& archivePath, const SevenZip::TString& filePath, int size) override;
+	virtual void OnListingDone(const SevenZip::TString& archivePath) override;
 	virtual bool OnCheckBreak() override;
 	
 	uint64 BytesLeft = 0;

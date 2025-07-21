@@ -2,7 +2,7 @@
 #include "ZipUtilityPrivatePCH.h"
 #include "ZipFileFunctionLibrary.h"
 
-void SevenZipCallbackHandler::OnProgress(const TString& archivePath, uint64 bytes)
+void SevenZipCallbackHandler::OnProgress(const SevenZip::TString& archivePath, unsigned __int64 bytes)
 {
 	const UObject* interfaceDelegate = ProgressDelegate;
 	const uint64 bytesConst = bytes;
@@ -19,7 +19,7 @@ void SevenZipCallbackHandler::OnProgress(const TString& archivePath, uint64 byte
 	}
 }
 
-void SevenZipCallbackHandler::OnDone(const TString& archivePath)
+void SevenZipCallbackHandler::OnDone(const SevenZip::TString& archivePath)
 {
 	const UObject* interfaceDelegate = ProgressDelegate;
 	const FString pathConst = FString(archivePath.c_str());
@@ -31,7 +31,7 @@ void SevenZipCallbackHandler::OnDone(const TString& archivePath)
 	});
 }
 
-void SevenZipCallbackHandler::OnFileDone(const TString& archivePath, const TString& filePath, uint64 bytes)
+void SevenZipCallbackHandler::OnFileDone(const SevenZip::TString& archivePath, const SevenZip::TString& filePath, unsigned __int64 bytes)
 {
 	const UObject* interfaceDelegate = ProgressDelegate;
 	const FString pathConst = FString(archivePath.c_str());
@@ -56,7 +56,7 @@ void SevenZipCallbackHandler::OnFileDone(const TString& archivePath, const TStri
 		});
 	}
 }
-void SevenZipCallbackHandler::OnStartWithTotal(const TString& archivePath, unsigned __int64 totalBytes)
+void SevenZipCallbackHandler::OnStartWithTotal(const SevenZip::TString& archivePath, unsigned __int64 totalBytes)
 {
 	TotalBytes = totalBytes;
 	BytesLeft = TotalBytes;
@@ -71,7 +71,7 @@ void SevenZipCallbackHandler::OnStartWithTotal(const TString& archivePath, unsig
 		((IZipUtilityInterface*)interfaceDelegate)->Execute_OnStartProcess((UObject*)interfaceDelegate, pathConst, bytesConst);
 	});
 }
-void SevenZipCallbackHandler::OnFileFound(const TString& archivePath, const TString& filePath, int size)
+void SevenZipCallbackHandler::OnFileFound(const SevenZip::TString& archivePath, const SevenZip::TString& filePath, int size)
 {
 	const UObject* interfaceDelegate = ProgressDelegate;
 	const uint64 bytesConst = TotalBytes;
@@ -83,7 +83,7 @@ void SevenZipCallbackHandler::OnFileFound(const TString& archivePath, const TStr
 		((IZipUtilityInterface*)interfaceDelegate)->Execute_OnFileFound((UObject*)interfaceDelegate, pathString, fileString, bytesConst);
 	});
 }
-void SevenZipCallbackHandler::OnListingDone(const TString& archivePath)
+void SevenZipCallbackHandler::OnListingDone(const SevenZip::TString& archivePath)
 {
 	const UObject* interfaceDelegate = ProgressDelegate;
 	const FString pathString = FString(archivePath.c_str());

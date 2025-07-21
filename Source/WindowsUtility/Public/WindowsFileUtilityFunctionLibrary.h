@@ -10,7 +10,7 @@ struct FWatcher
 	
 	FString Path;
 
-	TSharedFuture<void> ThreadFuture = nullptr;
+	TSharedFuture<void> ThreadFuture;
 	
 	FThreadSafeBool ShouldRun = true;
 	

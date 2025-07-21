@@ -2,6 +2,7 @@
 #include "WindowsFileUtilityPrivatePCH.h"
 #include "WFUFolderWatchInterface.h"
 #include "WFUFileListInterface.h"
+#include "WFUFileListLambdaDelegate.h"
 
 
 //static TMAP definition
